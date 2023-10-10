@@ -83,6 +83,17 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		}
 	case samure.EventPointerEnter:
 		e.Seat.SetPointerShape(samure.CursorShapeCrosshair)
+	case samure.EventKeyboardKey:
+		if e.State == samure.StateReleased {
+			switch e.Key {
+			case samure.KeyEsc:
+				a.start = [2]float64{0.0, 0.0}
+				a.end = a.start
+				ctx.SetRunning(false)
+			case samure.KeyEnter:
+				ctx.SetRunning(false)
+			}
+		}
 	}
 }
 
