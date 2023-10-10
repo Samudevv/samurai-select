@@ -28,6 +28,28 @@ func main() {
 	}
 	defer ctx.Destroy()
 
+	if flags.FreezeScreen {
+		for i := 0; i < ctx.LenOutputs(); i++ {
+			o := ctx.Output(i)
+
+			bg, err := samure.CreateLayerSurface(ctx, &o, samure.LayerTop, samure.AnchorFill, false, false, false)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Could not create surface to freeze screen for \"%s\": %v\n", o.Name(), err)
+				continue
+			}
+			defer bg.Destroy(ctx)
+
+			s, err := o.Screenshot(ctx)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Screenshot of \"%s\" failed: %v\n", o.Name(), err)
+				continue
+			}
+
+			bg.DrawBuffer(s)
+			s.Destroy()
+		}
+	}
+
 	ctx.SetRenderState(samure.RenderStateOnce)
 	ctx.Run()
 
