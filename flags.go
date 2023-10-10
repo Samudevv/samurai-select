@@ -22,7 +22,8 @@ var flags struct {
 	FreezeScreen     bool    `short:"f" long:"freeze" description:"Freeze the screen while performing the selection"`
 	Screenshot       bool    `short:"s" long:"screenshot" description:"Use grim to perform a screenshot"`
 	ScreenshotOutput string  `short:"o" long:"output" description:"File path where the screenshot will be stored" default:"screenshot.png"`
-	ScreenshotFlags  string  `long:"screenshot-flags" description:"These flags are passed to grim when performing the screenshot" default:""`
+	ScreenshotFlags  string  `long:"screenshot-flags" description:"These flags are passed to grim when performing the screenshot"`
+	Command          string  `short:"c" long:"cmd" description:"Clear the screen and execute a command. This is useful to perform an action while the screen is frozen. Insert %geometry% where you want to put the resulting geometry."`
 }
 
 func CreateApp(argv []string) (*App, error) {

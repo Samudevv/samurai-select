@@ -64,10 +64,20 @@ func main() {
 	geometry := fmt.Sprintf("%d,%d %dx%d", sel.X, sel.Y, sel.W, sel.H)
 	fmt.Println(geometry)
 
+	if flags.Screenshot || flags.Command != "" {
+		a.clearScreen = true
+		for i := 0; i < ctx.LenOutputs(); i++ {
+			ctx.RenderOutput(ctx.Output(i), 0.0)
+		}
+		ctx.Flush()
+	}
+
 	if flags.Screenshot {
 		var screenshotFlags []string
 		if flags.ScreenshotFlags != "" {
-			screenshotFlags = append(screenshotFlags, strings.Split(flags.ScreenshotFlags, " ")...)
+			screenshotFlags = append(screenshotFlags, strings.FieldsFunc(flags.ScreenshotFlags, func(c rune) bool {
+				return c == ' '
+			})...)
 		}
 		screenshotFlags = append(
 			screenshotFlags,
@@ -85,13 +95,24 @@ func main() {
 		grim.Stderr = os.Stderr
 		grim.Stdout = os.Stderr
 
-		a.clearScreen = true
-		for i := 0; i < ctx.LenOutputs(); i++ {
-			ctx.RenderOutput(ctx.Output(i), 0.0)
-		}
-		ctx.Flush()
-
 		if err := grim.Run(); err != nil {
+			os.Exit(1)
+		}
+	}
+
+	if flags.Command != "" {
+		commandArgs := strings.FieldsFunc(flags.Command, func(c rune) bool {
+			return c == ' '
+		})
+		for i := range commandArgs {
+			commandArgs[i] = strings.ReplaceAll(commandArgs[i], "%geometry%", geometry)
+		}
+		cmd := exec.Command(commandArgs[0], commandArgs[1:]...)
+		fmt.Println(cmd.Args)
+		cmd.Stdout = os.Stderr
+		cmd.Stderr = os.Stderr
+
+		if err := cmd.Run(); err != nil {
 			os.Exit(1)
 		}
 	}
