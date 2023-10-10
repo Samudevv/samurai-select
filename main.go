@@ -21,7 +21,7 @@ func run() int {
 
 	cfg := samure.CreateContextConfig(a)
 	cfg.PointerInteraction = true
-	cfg.KeyboardInteraction = false
+	cfg.KeyboardInteraction = true
 
 	ctx, err := samure.CreateContextWithBackend(cfg, b)
 	if err != nil {
