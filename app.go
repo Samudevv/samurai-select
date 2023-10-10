@@ -83,8 +83,6 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 				a.start = [2]float64{0.0, 0.0}
 				a.end = a.start
 				ctx.SetRunning(false)
-			case samure.KeyEnter:
-				ctx.SetRunning(false)
 			}
 		}
 	}
