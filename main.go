@@ -9,8 +9,6 @@ import (
 )
 
 func main() {
-	fmt.Println("Welcome to Samurai Select!")
-
 	a, err := CreateApp(os.Args)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create samurai-select app: %v\n", err)
@@ -20,6 +18,7 @@ func main() {
 	b := &cairo.Backend{}
 
 	cfg := samure.CreateContextConfig(a)
+	cfg.PointerInteraction = true
 
 	ctx, err := samure.CreateContextWithBackend(cfg, b)
 	if err != nil {
@@ -30,5 +29,11 @@ func main() {
 
 	ctx.Run()
 
-	fmt.Println("Good Bye! Please come again.")
+	sel, err := a.GetSelection()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("%d,%d %dx%d\n", sel.X, sel.Y, sel.W, sel.H)
 }
