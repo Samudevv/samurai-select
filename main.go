@@ -65,7 +65,10 @@ func main() {
 	fmt.Println(geometry)
 
 	if flags.Screenshot {
-		screenshotFlags := strings.Split(flags.ScreenshotFlags, " ")
+		var screenshotFlags []string
+		if flags.ScreenshotFlags != "" {
+			screenshotFlags = append(screenshotFlags, strings.Split(flags.ScreenshotFlags, " ")...)
+		}
 		screenshotFlags = append(
 			screenshotFlags,
 			"-g",

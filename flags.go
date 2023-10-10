@@ -22,7 +22,7 @@ var flags struct {
 	FreezeScreen     bool    `short:"f" long:"freeze" description:"Freeze the screen while performing the selection"`
 	Screenshot       bool    `short:"s" long:"screenshot" description:"Use grim to perform a screenshot"`
 	ScreenshotOutput string  `short:"o" long:"output" description:"File path where the screenshot will be stored" default:"screenshot.png"`
-	ScreenshotFlags  string  `long:"screenshot-flags" description:"These flags are passed to grim when performing the screenshot" default:"-c"`
+	ScreenshotFlags  string  `long:"screenshot-flags" description:"These flags are passed to grim when performing the screenshot" default:""`
 }
 
 func CreateApp(argv []string) (*App, error) {
