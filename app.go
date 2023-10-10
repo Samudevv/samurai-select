@@ -66,6 +66,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 				a.start = a.hold
 				a.end = a.hold
 				a.state = StateDragNormal
+				ctx.SetRenderState(samure.RenderStateOnce)
 			}
 		case StateDragNormal:
 			if e.Button == samure.ButtonLeft && e.State == samure.StateReleased {
@@ -80,6 +81,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		case StateDragNormal:
 			a.end[0] = e.X + float64(e.Seat.PointerFocus().Output().Geo().X)
 			a.end[1] = e.Y + float64(e.Seat.PointerFocus().Output().Geo().Y)
+			ctx.SetRenderState(samure.RenderStateOnce)
 		}
 	case samure.EventPointerEnter:
 		e.Seat.SetPointerShape(samure.CursorShapeCrosshair)
@@ -115,33 +117,46 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 	}
 
 	start := [2]float64{
-		o.RelX(a.start[0]),
-		o.RelY(a.start[1]),
+		a.start[0],
+		a.start[1],
 	}
 	end := [2]float64{
-		o.RelX(a.end[0]),
-		o.RelY(a.end[1]),
+		a.end[0],
+		a.end[1],
+	}
+	if start[0] > end[0] {
+		start[0], end[0] = end[0], start[0]
+	}
+	if start[1] > end[1] {
+		start[1], end[1] = end[1], start[1]
 	}
 
-	// Render the selection
-	c.SetSourceRGBA(
-		a.selectionColor[0],
-		a.selectionColor[1],
-		a.selectionColor[2],
-		a.selectionColor[3],
-	)
-	c.Rectangle(start[0], start[1], end[0]-start[0], end[1]-start[1])
-	c.Fill()
-	// Render the border of the selection
-	c.SetSourceRGBA(
-		a.borderColor[0],
-		a.borderColor[1],
-		a.borderColor[2],
-		a.borderColor[3],
-	)
-	c.Rectangle(start[0], start[1], end[0]-start[0], end[1]-start[1])
-	c.SetLineWidth(a.borderWidth)
-	c.Stroke()
+	if o.RectInOutput(int(start[0]), int(start[1]), int(end[0]-start[0]), int(end[1]-start[1])) {
+		start[0] = o.RelX(start[0])
+		start[1] = o.RelY(start[1])
+		end[0] = o.RelX(end[0])
+		end[1] = o.RelY(end[1])
+
+		// Render the selection
+		c.SetSourceRGBA(
+			a.selectionColor[0],
+			a.selectionColor[1],
+			a.selectionColor[2],
+			a.selectionColor[3],
+		)
+		c.Rectangle(start[0], start[1], end[0]-start[0], end[1]-start[1])
+		c.Fill()
+		// Render the border of the selection
+		c.SetSourceRGBA(
+			a.borderColor[0],
+			a.borderColor[1],
+			a.borderColor[2],
+			a.borderColor[3],
+		)
+		c.Rectangle(start[0], start[1], end[0]-start[0], end[1]-start[1])
+		c.SetLineWidth(a.borderWidth)
+		c.Stroke()
+	}
 }
 
 func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {

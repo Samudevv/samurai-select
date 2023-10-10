@@ -28,6 +28,7 @@ func main() {
 	}
 	defer ctx.Destroy()
 
+	ctx.SetRenderState(samure.RenderStateOnce)
 	ctx.Run()
 
 	sel, err := a.GetSelection()
