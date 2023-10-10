@@ -26,15 +26,6 @@ type App struct {
 	borderWidth     float64
 }
 
-func CreateApp(argv []string) (*App, error) {
-	a := &App{}
-	a.backgroundColor = [4]float64{0.1, 0.1, 0.1, 0.5}
-	a.selectionColor = [4]float64{0.0, 0.0, 0.0, 0.0}
-	a.borderColor = [4]float64{0.0, 0.0, 0.0, 1.0}
-	a.borderWidth = 2.0
-	return a, nil
-}
-
 func (a App) GetSelection() (samure.Rect, error) {
 	if a.start[0] == 0.0 && a.start[1] == 0.0 && a.end[0] == 0.0 && a.end[1] == 0.0 {
 		return samure.Rect{}, errors.New("selection cancelled")
