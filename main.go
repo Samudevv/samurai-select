@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"strings"
 
 	samure "github.com/PucklaJ/samurai-render-go"
 	"github.com/PucklaJ/samurai-render-go/backends/cairo"
@@ -19,7 +21,7 @@ func main() {
 
 	cfg := samure.CreateContextConfig(a)
 	cfg.PointerInteraction = true
-	cfg.KeyboardInteraction = true
+	cfg.KeyboardInteraction = false
 
 	ctx, err := samure.CreateContextWithBackend(cfg, b)
 	if err != nil {
@@ -59,5 +61,35 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("%d,%d %dx%d\n", sel.X, sel.Y, sel.W, sel.H)
+	geometry := fmt.Sprintf("%d,%d %dx%d", sel.X, sel.Y, sel.W, sel.H)
+	fmt.Println(geometry)
+
+	if flags.Screenshot {
+		screenshotFlags := strings.Split(flags.ScreenshotFlags, " ")
+		screenshotFlags = append(
+			screenshotFlags,
+			"-g",
+			geometry,
+			flags.ScreenshotOutput,
+		)
+		grimPath, err := exec.LookPath("grim")
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Could not find grim")
+			os.Exit(1)
+		}
+
+		grim := exec.Command(grimPath, screenshotFlags...)
+		grim.Stderr = os.Stderr
+		grim.Stdout = os.Stderr
+
+		a.clearScreen = true
+		for i := 0; i < ctx.LenOutputs(); i++ {
+			ctx.RenderOutput(ctx.Output(i), 0.0)
+		}
+		ctx.Flush()
+
+		if err := grim.Run(); err != nil {
+			os.Exit(1)
+		}
+	}
 }

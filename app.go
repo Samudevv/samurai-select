@@ -19,7 +19,8 @@ type App struct {
 	end   [2]float64
 	hold  [2]float64
 
-	state int
+	state       int
+	clearScreen bool
 
 	backgroundColor [4]float64
 	selectionColor  [4]float64
@@ -94,8 +95,8 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 
 func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o samure.Rect, deltaTime float64) {
 	c := samure_cairo.Get(layerSurface)
-
 	c.SetOperator(cairo.OPERATOR_SOURCE)
+
 	// Clear the screen with the background color
 	c.SetSourceRGBA(
 		a.backgroundColor[0],
@@ -132,6 +133,18 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 	if o.RectInOutput(int(xGlobal), int(yGlobal), int(w), int(h)) {
 		x := o.RelX(xGlobal)
 		y := o.RelY(yGlobal)
+
+		if a.clearScreen {
+			c.SetSourceRGBA(0.0, 0.0, 0.0, 0.0)
+			c.Rectangle(
+				x-flags.BorderWidth/2.0,
+				y-flags.BorderWidth/2.0,
+				w+flags.BorderWidth,
+				h+flags.BorderWidth,
+			)
+			c.Fill()
+			return
+		}
 
 		// Render the selection
 		c.SetSourceRGBA(

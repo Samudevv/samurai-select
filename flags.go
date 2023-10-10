@@ -14,12 +14,15 @@ var flags struct {
 	BorderColor     string `long:"border-color" description:"Set the color that is used to draw the border around the selection box" default:"#000000FF"`
 	TextColor       string `long:"text-color" description:"Set the color that is used for the text" default:"#000000FF"`
 
-	BorderWidth  float64 `long:"border-width" description:"The width of the border in pixels" default:"2.0"`
-	Text         bool    `short:"t" long:"text" description:"Display the selection position and dimensions next to the selection box"`
-	Font         string  `long:"font" description:"Set the font family of the text" default:"sans-serif"`
-	FontSize     float64 `long:"font-size" description:"Set the font size of the text" default:"16"`
-	TextPadding  float64 `long:"text-padding" description:"The distance between the selection box and each text" default:"10"`
-	FreezeScreen bool    `short:"f" long:"freeze" description:"Freeze the screen while performing the selection"`
+	BorderWidth      float64 `long:"border-width" description:"The width of the border in pixels" default:"2.0"`
+	Text             bool    `short:"t" long:"text" description:"Display the selection position and dimensions next to the selection box"`
+	Font             string  `long:"font" description:"Set the font family of the text" default:"sans-serif"`
+	FontSize         float64 `long:"font-size" description:"Set the font size of the text" default:"16"`
+	TextPadding      float64 `long:"text-padding" description:"The distance between the selection box and each text" default:"10"`
+	FreezeScreen     bool    `short:"f" long:"freeze" description:"Freeze the screen while performing the selection"`
+	Screenshot       bool    `short:"s" long:"screenshot" description:"Use grim to perform a screenshot"`
+	ScreenshotOutput string  `short:"o" long:"output" description:"File path where the screenshot will be stored" default:"screenshot.png"`
+	ScreenshotFlags  string  `long:"screenshot-flags" description:"These flags are passed to grim when performing the screenshot" default:"-c"`
 }
 
 func CreateApp(argv []string) (*App, error) {
@@ -45,6 +48,7 @@ func CreateApp(argv []string) (*App, error) {
 		flags.BorderWidth = 0.0
 	}
 	a.padding = flags.TextPadding + flags.BorderWidth/2.0
+
 	return a, nil
 }
 
