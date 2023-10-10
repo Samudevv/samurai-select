@@ -10,11 +10,11 @@ import (
 	"github.com/PucklaJ/samurai-render-go/backends/cairo"
 )
 
-func main() {
+func run() int {
 	a, err := CreateApp(os.Args)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create samurai-select app: %v\n", err)
-		os.Exit(1)
+		return 1
 	}
 
 	b := &cairo.Backend{}
@@ -26,7 +26,7 @@ func main() {
 	ctx, err := samure.CreateContextWithBackend(cfg, b)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create samurai-render context: %v\n", err)
-		os.Exit(1)
+		return 1
 	}
 	defer ctx.Destroy()
 
@@ -58,7 +58,7 @@ func main() {
 	sel, err := a.GetSelection()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return 1
 	}
 
 	geometry := fmt.Sprintf("%d,%d %dx%d", sel.X, sel.Y, sel.W, sel.H)
@@ -88,7 +88,7 @@ func main() {
 		grimPath, err := exec.LookPath("grim")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Could not find grim")
-			os.Exit(1)
+			return 1
 		}
 
 		grim := exec.Command(grimPath, screenshotFlags...)
@@ -96,7 +96,7 @@ func main() {
 		grim.Stdout = os.Stderr
 
 		if err := grim.Run(); err != nil {
-			os.Exit(1)
+			return 1
 		}
 	}
 
@@ -113,7 +113,13 @@ func main() {
 		cmd.Stderr = os.Stderr
 
 		if err := cmd.Run(); err != nil {
-			os.Exit(1)
+			return 1
 		}
 	}
+
+	return 0
+}
+
+func main() {
+	os.Exit(run())
 }
