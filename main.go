@@ -41,7 +41,7 @@ func run() int {
 			}
 			defer bg.Destroy(ctx)
 
-			s, err := o.Screenshot(ctx)
+			s, err := o.Screenshot(ctx, false)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Screenshot of \"%s\" failed: %v\n", o.Name(), err)
 				continue
