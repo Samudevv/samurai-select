@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	samure "github.com/PucklaJ/samurai-render-go"
 	"github.com/PucklaJ/samurai-render-go/backends/cairo"
@@ -73,6 +74,14 @@ func run() int {
 	}
 
 	if flags.Screenshot {
+		now := time.Now()
+		var screenshotFileName string
+		if strings.Contains(flags.ScreenshotOutput, "%") {
+			screenshotFileName = fmt.Sprintf(flags.ScreenshotOutput, now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
+		} else {
+			screenshotFileName = flags.ScreenshotOutput
+		}
+
 		var screenshotFlags []string
 		if flags.ScreenshotFlags != "" {
 			screenshotFlags = append(screenshotFlags, strings.FieldsFunc(flags.ScreenshotFlags, func(c rune) bool {
@@ -83,7 +92,7 @@ func run() int {
 			screenshotFlags,
 			"-g",
 			geometry,
-			flags.ScreenshotOutput,
+			screenshotFileName,
 		)
 		grimPath, err := exec.LookPath("grim")
 		if err != nil {
