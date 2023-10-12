@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
+	"strings"
 
 	flag "github.com/jessevdk/go-flags"
 	css "github.com/mazznoer/csscolorparser"
@@ -17,6 +20,7 @@ var flags struct {
 	BorderWidth      float64 `long:"border-width" description:"The width of the border in pixels" default:"2.0"`
 	Text             bool    `short:"t" long:"text" description:"Display the selection position and dimensions next to the selection box"`
 	Font             string  `long:"font" description:"Set the font family of the text" default:"sans-serif"`
+	ListFonts        bool    `long:"list-fonts" description:"List installed fonts that can be used"`
 	FontSize         float64 `long:"font-size" description:"Set the font size of the text" default:"16"`
 	TextPadding      float64 `long:"text-padding" description:"The distance between the selection box and each text" default:"10"`
 	FreezeScreen     bool    `short:"f" long:"freeze" description:"Freeze the screen while performing the selection"`
@@ -37,6 +41,40 @@ func CreateApp(argv []string) (*App, error) {
 			fmt.Fprint(os.Stderr, err)
 		}
 		os.Exit(1)
+	}
+
+	if flags.ListFonts {
+		fcList, err := exec.LookPath("fc-list")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Can not list fonts: %v\n", err)
+			os.Exit(1)
+		}
+
+		var fcListOut strings.Builder
+		fcListCmd := exec.Command(fcList, "--brief")
+		fcListCmd.Stdout = &fcListOut
+		fcListCmd.Stderr = os.Stderr
+
+		if err := fcListCmd.Run(); err != nil {
+			fmt.Fprintln(os.Stderr, "Failed to list fonts")
+			os.Exit(1)
+		}
+
+		scanner := bufio.NewScanner(strings.NewReader(fcListOut.String()))
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			if strings.Contains(line, "family:") {
+				words := strings.Split(line, "\"")
+				if len(words) < 2 {
+					continue
+				}
+				familyName := strings.ToLower(words[1])
+				fmt.Print("\"", familyName, "\"\n")
+			}
+		}
+
+		os.Exit(0)
 	}
 
 	a := &App{}
