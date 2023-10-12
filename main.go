@@ -61,7 +61,7 @@ func run() int {
 		return 1
 	}
 
-	geometry := fmt.Sprintf("%d,%d %dx%d", sel.X, sel.Y, sel.W, sel.H)
+	geometry := fmt.Sprintf(flags.Format, sel.X, sel.Y, sel.W, sel.H)
 	fmt.Println(geometry)
 
 	if flags.Screenshot || flags.Command != "" {

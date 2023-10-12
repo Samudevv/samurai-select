@@ -23,11 +23,12 @@ var flags struct {
 	ListFonts        bool    `long:"list-fonts" description:"List installed fonts that can be used"`
 	FontSize         float64 `long:"font-size" description:"Set the font size of the text" default:"16"`
 	TextPadding      float64 `long:"text-padding" description:"The distance between the selection box and each text" default:"10"`
-	FreezeScreen     bool    `short:"f" long:"freeze" description:"Freeze the screen while performing the selection"`
+	FreezeScreen     bool    `short:"z" long:"freeze" description:"Freeze the screen while performing the selection"`
 	Screenshot       bool    `short:"s" long:"screenshot" description:"Use grim to perform a screenshot"`
 	ScreenshotOutput string  `short:"o" long:"output" description:"File path where the screenshot will be stored" default:"screenshot.png"`
 	ScreenshotFlags  string  `long:"screenshot-flags" description:"These flags are passed to grim when performing the screenshot"`
 	Command          string  `short:"c" long:"cmd" description:"Clear the screen and execute a command. This is useful to perform an action while the screen is frozen. Insert %geometry% where you want to put the resulting geometry."`
+	Format           string  `short:"f" long:"format" description:"Set the format in which the geometry is output. Use Explicit argument indexes (https://pkg.go.dev/fmt) where 1 is x, 2 is y, 3 is width and 4 is height" default:"%[1]d,%[2]d %[3]dx%[4]d"`
 }
 
 func CreateApp(argv []string) (*App, error) {
