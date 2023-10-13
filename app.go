@@ -229,12 +229,14 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			a.start[1] = y
 			a.end[0] = x + w
 			a.end[1] = y + h
+			a.handleOverlap()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragTop:
 			h += y - py
 			y = py
 			a.start[1] = y
 			a.end[1] = y + h
+			a.handleOverlap()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragTopRight:
 			w = px - x
@@ -243,20 +245,24 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			a.start[1] = y
 			a.end[0] = x + w
 			a.end[1] = y + h
+			a.handleOverlap()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragRight:
 			w = px - x
 			a.end[0] = x + w
+			a.handleOverlap()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragBottomRight:
 			w = px - x
 			h = py - y
 			a.end[0] = x + w
 			a.end[1] = y + h
+			a.handleOverlap()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragBottom:
 			h = py - y
 			a.end[1] = y + h
+			a.handleOverlap()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragBottomLeft:
 			w += x - px
@@ -265,12 +271,14 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			a.start[0] = x
 			a.end[0] = x + w
 			a.end[1] = y + h
+			a.handleOverlap()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragLeft:
 			w += x - px
 			x = px
 			a.start[0] = x
 			a.end[0] = x + w
+			a.handleOverlap()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
 	case samure.EventTouchMotion:
@@ -349,4 +357,56 @@ func (a App) pointerInGrabber(x, y, gx, gy float64) bool {
 	dy := gy - y
 	r := a.grabberRadius + a.grabberBorderWidth/2.0
 	return (dx*dx + dy*dy) < r*r
+}
+
+func (a *App) handleOverlap() {
+	x := a.start[0]
+	y := a.start[1]
+	w := a.end[0] - a.start[0]
+	h := a.end[1] - a.start[1]
+
+	if w < 0 {
+		x += w
+		w = -w
+		a.start[0] = x
+		a.end[0] = x + w
+
+		switch a.state {
+		case StateDragTopLeft:
+			a.state = StateDragTopRight
+		case StateDragTopRight:
+			a.state = StateDragTopLeft
+		case StateDragBottomLeft:
+			a.state = StateDragBottomRight
+		case StateDragBottomRight:
+			a.state = StateDragBottomLeft
+		case StateDragLeft:
+			a.state = StateDragRight
+		case StateDragRight:
+			a.state = StateDragLeft
+		}
+
+	}
+
+	if h < 0 {
+		y += h
+		h = -h
+		a.start[1] = y
+		a.end[1] = y + h
+
+		switch a.state {
+		case StateDragTopLeft:
+			a.state = StateDragBottomLeft
+		case StateDragTopRight:
+			a.state = StateDragBottomRight
+		case StateDragBottomLeft:
+			a.state = StateDragTopLeft
+		case StateDragBottomRight:
+			a.state = StateDragTopRight
+		case StateDragTop:
+			a.state = StateDragBottom
+		case StateDragBottom:
+			a.state = StateDragTop
+		}
+	}
 }
