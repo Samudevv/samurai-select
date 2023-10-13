@@ -51,25 +51,10 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 		return
 	}
 
-	start := [2]float64{
-		a.start[0],
-		a.start[1],
-	}
-	end := [2]float64{
-		a.end[0],
-		a.end[1],
-	}
-	if start[0] > end[0] {
-		start[0], end[0] = end[0], start[0]
-	}
-	if start[1] > end[1] {
-		start[1], end[1] = end[1], start[1]
-	}
-
-	xGlobal := start[0]
-	yGlobal := start[1]
-	w := end[0] - start[0]
-	h := end[1] - start[1]
+	xGlobal := a.start[0]
+	yGlobal := a.start[1]
+	w := a.end[0] - a.start[0]
+	h := a.end[1] - a.start[1]
 
 	if o.RectInOutput(int(xGlobal), int(yGlobal), int(w), int(h)) {
 		x := o.RelX(xGlobal)

@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	flag "github.com/jessevdk/go-flags"
@@ -55,6 +56,7 @@ var flags struct {
 	ScreenshotFlags  string  `long:"screenshot-flags" description:"These flags are passed to grim when performing the screenshot"`
 	Command          string  `short:"c" long:"cmd" description:"Clear the screen and execute a command. This is useful to perform an action while the screen is frozen. Insert %geometry% where you want to put the resulting geometry."`
 	Format           string  `short:"f" long:"format" description:"Set the format in which the geometry is output. Use Explicit argument indexes (https://pkg.go.dev/fmt) where 1 is x, 2 is y, 3 is width and 4 is height" default:"%[1]d,%[2]d %[3]dx%[4]d"`
+	ForceAspectRatio string  `short:"a" long:"aspect-ratio" description:"Force an aspect ratio for the selection box in the format w:h"`
 }
 
 func CreateApp(argv []string) (*App, error) {
@@ -114,6 +116,31 @@ func CreateApp(argv []string) (*App, error) {
 		flags.BorderWidth = 0.0
 	}
 	a.padding = flags.TextPadding + flags.BorderWidth/2.0
+
+	if flags.ForceAspectRatio != "" {
+		// Parse aspect ratio
+		words := strings.Split(flags.ForceAspectRatio, ":")
+		for {
+			if len(words) != 2 {
+				fmt.Fprintln(os.Stderr, "Invalid aspect ratio")
+				break
+			}
+
+			w, err := strconv.ParseInt(words[0], 10, 64)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Invalid aspect ratio: %v\n", err)
+				break
+			}
+			h, err := strconv.ParseInt(words[1], 10, 64)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Invalid aspect ratio: %v\n", err)
+				break
+			}
+
+			a.aspect = float64(w) / float64(h)
+			break
+		}
+	}
 
 	return a, nil
 }

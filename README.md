@@ -11,4 +11,4 @@ A screen selection tool for wlroots based wayland compositors. I thank [slurp](h
 + [x] Show Coordinates and Dimensions (-t flag)
 + [ ] Alter selection after performing an initial selection
 + [ ] Touch Support
-+ [ ] Force aspect ratio
++ [x] Force aspect ratio (-a flag)

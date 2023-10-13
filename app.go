@@ -28,6 +28,7 @@ package main
 
 import (
 	"errors"
+	"math"
 
 	samure "github.com/PucklaJ/samurai-render-go"
 )
@@ -38,9 +39,10 @@ const (
 )
 
 type App struct {
-	start [2]float64
-	end   [2]float64
-	hold  [2]float64
+	start   [2]float64 // The top left corner of the selection box
+	end     [2]float64 // The bottom right corner of the selection box
+	pointer [2]float64 // The raw position of the pointer in global coordinates
+	anchor  [2]float64 // The position where the pointer has been released
 
 	state       int
 	clearScreen bool
@@ -50,6 +52,7 @@ type App struct {
 	borderColor     [4]float64
 	textColor       [4]float64
 	padding         float64
+	aspect          float64
 }
 
 func (a App) GetSelection() (samure.Rect, error) {
@@ -57,20 +60,11 @@ func (a App) GetSelection() (samure.Rect, error) {
 		return samure.Rect{}, errors.New("selection cancelled")
 	}
 
-	start := a.start
-	end := a.end
-	if start[0] > end[0] {
-		start[0], end[0] = end[0], start[0]
-	}
-	if start[1] > end[1] {
-		start[1], end[1] = end[1], start[1]
-	}
-
 	return samure.Rect{
-		X: int(start[0]),
-		Y: int(start[1]),
-		W: int(end[0] - start[0]),
-		H: int(end[1] - start[1]),
+		X: int(a.start[0]),
+		Y: int(a.start[1]),
+		W: int(a.end[0] - a.start[0]),
+		H: int(a.end[1] - a.start[1]),
 	}, nil
 }
 
@@ -80,8 +74,9 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		switch a.state {
 		case StateNone:
 			if e.Button == samure.ButtonLeft && e.State == samure.StatePressed {
-				a.start = a.hold
-				a.end = a.hold
+				a.anchor = a.pointer
+				a.computeStartEnd()
+
 				a.state = StateDragNormal
 				ctx.SetRenderState(samure.RenderStateOnce)
 			}
@@ -91,13 +86,12 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			}
 		}
 	case samure.EventPointerMotion:
+		a.pointer[0] = e.X + float64(e.Seat.PointerFocus().Output().Geo().X)
+		a.pointer[1] = e.Y + float64(e.Seat.PointerFocus().Output().Geo().Y)
+
 		switch a.state {
-		case StateNone:
-			a.hold[0] = e.X + float64(e.Seat.PointerFocus().Output().Geo().X)
-			a.hold[1] = e.Y + float64(e.Seat.PointerFocus().Output().Geo().Y)
 		case StateDragNormal:
-			a.end[0] = e.X + float64(e.Seat.PointerFocus().Output().Geo().X)
-			a.end[1] = e.Y + float64(e.Seat.PointerFocus().Output().Geo().Y)
+			a.computeStartEnd()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
 	case samure.EventPointerEnter:
@@ -116,4 +110,29 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 
 func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {
 
+}
+
+func (a *App) computeStartEnd() {
+	width := math.Abs(a.pointer[0] - a.anchor[0])
+	height := math.Abs(a.pointer[1] - a.anchor[1])
+
+	if a.aspect != 0.0 {
+		width = math.Max(width, height*a.aspect)
+		height = math.Max(height, width/a.aspect)
+	}
+
+	if a.pointer[0] < a.anchor[0] {
+		a.start[0] = a.anchor[0] - width - 1
+		a.end[0] = a.anchor[0]
+	} else {
+		a.start[0] = a.anchor[0]
+		a.end[0] = a.anchor[0] + width + 1
+	}
+	if a.pointer[1] < a.anchor[1] {
+		a.start[1] = a.anchor[1] - height - 1
+		a.end[1] = a.anchor[1]
+	} else {
+		a.start[1] = a.anchor[1]
+		a.end[1] = a.anchor[1] + height + 1
+	}
 }
