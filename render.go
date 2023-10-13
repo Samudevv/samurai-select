@@ -28,6 +28,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 
 	samure "github.com/PucklaJ/samurai-render-go"
 	samure_cairo "github.com/PucklaJ/samurai-render-go/backends/cairo"
@@ -93,6 +94,8 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 		c.Stroke()
 	}
 
+	a.renderGrabbers(c, o)
+
 	if flags.Text {
 		x := o.RelX(xGlobal)
 		y := o.RelY(yGlobal)
@@ -150,4 +153,58 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 			c.ShowText(yStr)
 		}
 	}
+}
+
+func (a App) renderGrabbers(c *cairo.Context, o samure.Rect) {
+	if a.state < StateAlter || a.state > StateDragLeft {
+		return
+	}
+
+	x := o.RelX(a.start[0])
+	y := o.RelY(a.start[1])
+	w := a.end[0] - a.start[0]
+	h := a.end[1] - a.start[1]
+
+	a.renderGrabber(c, x, y, o)         // Top Left
+	a.renderGrabber(c, x+w/2.0, y, o)   // Top
+	a.renderGrabber(c, x+w, y, o)       // Top Right
+	a.renderGrabber(c, x+w, y+h/2.0, o) // Right
+	a.renderGrabber(c, x+w, y+h, o)     // Bottom Right
+	a.renderGrabber(c, x+w/2.0, y+h, o) // Bottom
+	a.renderGrabber(c, x, y+h, o)       // Bottom Left
+	a.renderGrabber(c, x, y+h/2.0, o)   // Left
+}
+
+func (a App) renderGrabber(c *cairo.Context, x, y float64, o samure.Rect) {
+	if !o.CircleInOutput(int(x)+o.X, int(y)+o.Y, int(flags.GrabberRadius+flags.BorderWidth/2.0)) {
+		return
+	}
+
+	c.SetSourceRGBA(
+		a.grabberColor[0],
+		a.grabberColor[1],
+		a.grabberColor[2],
+		a.grabberColor[3],
+	)
+	c.Arc(x, y, a.grabberRadius, 0.0, math.Pi*2)
+	c.Fill()
+	c.SetSourceRGBA(
+		a.grabberBorderColor[0],
+		a.grabberBorderColor[1],
+		a.grabberBorderColor[2],
+		a.grabberBorderColor[3],
+	)
+	c.Arc(x, y, a.grabberRadius, 0.0, math.Pi*2)
+	c.SetLineWidth(a.grabberBorderWidth)
+	c.Stroke()
+}
+
+func easeOutElastic(x float64) float64 {
+	c4 := (2 * math.Pi) / 3
+
+	if x == 0.0 || x == 1.0 {
+		return x
+	}
+
+	return math.Pow(2.0, -10.0*x)*math.Sin((x*10.0-0.75)*c4) + 1.0
 }

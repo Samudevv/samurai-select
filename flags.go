@@ -39,10 +39,12 @@ import (
 )
 
 var flags struct {
-	BackgroundColor string `long:"background-color" description:"Set the clear color that fills the screen" default:"#FFFFFF40"`
-	SelectionColor  string `long:"selection-color" description:"Set the color that is used to draw the inside of the selection box" default:"#00000000"`
-	BorderColor     string `long:"border-color" description:"Set the color that is used to draw the border around the selection box" default:"#000000FF"`
-	TextColor       string `long:"text-color" description:"Set the color that is used for the text" default:"#000000FF"`
+	BackgroundColor    string `long:"background-color" description:"Set the clear color that fills the screen" default:"#FFFFFF40"`
+	SelectionColor     string `long:"selection-color" description:"Set the color that is used to draw the inside of the selection box" default:"#00000000"`
+	BorderColor        string `long:"border-color" description:"Set the color that is used to draw the border around the selection box" default:"#000000FF"`
+	TextColor          string `long:"text-color" description:"Set the color that is used for the text" default:"#000000FF"`
+	GrabberColor       string `long:"grabber-color" description:"The fill color of the grabbers for altering the selection" default:"#101010FF"`
+	GrabberBorderColor string `long:"grabber-border-color" description:"The border color of the grabbers for altering the selection" default:"#000000FF"`
 
 	BorderWidth      float64 `long:"border-width" description:"The width of the border in pixels" default:"2.0"`
 	Text             bool    `short:"t" long:"text" description:"Display the selection position and dimensions next to the selection box"`
@@ -57,6 +59,8 @@ var flags struct {
 	Command          string  `short:"c" long:"cmd" description:"Clear the screen and execute a command. This is useful to perform an action while the screen is frozen. Insert %geometry% where you want to put the resulting geometry."`
 	Format           string  `short:"f" long:"format" description:"Set the format in which the geometry is output. Use Explicit argument indexes (https://pkg.go.dev/fmt) where 1 is x, 2 is y, 3 is width and 4 is height" default:"%[1]d,%[2]d %[3]dx%[4]d"`
 	ForceAspectRatio string  `short:"a" long:"aspect-ratio" description:"Force an aspect ratio for the selection box in the format w:h"`
+	AlterSelection   bool    `short:"A" long:"alter-selection" description:"This flag lets you change the selection box after releasing left click by dragging the box at the edges and corners"`
+	GrabberRadius    float64 `long:"grabber-radius" description:"The radius of the grabbers for altering the selection" default:"7"`
 }
 
 func CreateApp(argv []string) (*App, error) {
@@ -111,6 +115,8 @@ func CreateApp(argv []string) (*App, error) {
 	a.selectionColor = parseColor(flags.SelectionColor)
 	a.borderColor = parseColor(flags.BorderColor)
 	a.textColor = parseColor(flags.TextColor)
+	a.grabberColor = parseColor(flags.GrabberColor)
+	a.grabberBorderColor = parseColor(flags.GrabberBorderColor)
 	if flags.BorderWidth < 0.0 {
 		fmt.Fprintf(os.Stderr, "--border-width values below zero are invalid\n")
 		flags.BorderWidth = 0.0

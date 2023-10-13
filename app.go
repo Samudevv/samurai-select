@@ -34,8 +34,19 @@ import (
 )
 
 const (
-	StateNone       = iota
-	StateDragNormal = iota
+	StateNone            = iota
+	StateDragNormal      = iota
+	StateAlter           = iota
+	StateDragTopLeft     = iota
+	StateDragTop         = iota
+	StateDragTopRight    = iota
+	StateDragRight       = iota
+	StateDragBottomRight = iota
+	StateDragBottom      = iota
+	StateDragBottomLeft  = iota
+	StateDragLeft        = iota
+
+	GrabberAnimSpeed = 1.4
 )
 
 type App struct {
@@ -49,12 +60,18 @@ type App struct {
 	touchID     *int
 	touchFocus  samure.Output
 
-	backgroundColor [4]float64
-	selectionColor  [4]float64
-	borderColor     [4]float64
-	textColor       [4]float64
-	padding         float64
-	aspect          float64
+	grabberAnim        float64
+	grabberRadius      float64
+	grabberBorderWidth float64
+
+	backgroundColor    [4]float64
+	selectionColor     [4]float64
+	borderColor        [4]float64
+	textColor          [4]float64
+	grabberColor       [4]float64
+	grabberBorderColor [4]float64
+	padding            float64
+	aspect             float64
 }
 
 func (a App) GetSelection() (samure.Rect, error) {
@@ -84,7 +101,12 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			}
 		case StateDragNormal:
 			if e.Button == samure.ButtonLeft && e.State == samure.StateReleased {
-				ctx.SetRunning(false)
+				if flags.AlterSelection {
+					a.state = StateAlter
+					ctx.SetRenderState(samure.RenderStateOnce)
+				} else {
+					ctx.SetRunning(false)
+				}
 			}
 		}
 	case samure.EventTouchDown:
@@ -105,19 +127,6 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 
 		a.state = StateDragNormal
 		ctx.SetRenderState(samure.RenderStateOnce)
-	case samure.EventTouchMotion:
-		if a.touchID == nil || *a.touchID != e.TouchID {
-			break
-		}
-
-		a.pointer[0] = e.X + float64(a.touchFocus.Geo().X)
-		a.pointer[1] = e.Y + float64(a.touchFocus.Geo().Y)
-
-		switch a.state {
-		case StateDragNormal:
-			a.computeStartEnd()
-			ctx.SetRenderState(samure.RenderStateOnce)
-		}
 	case samure.EventTouchUp:
 		if a.touchID == nil || *a.touchID != e.TouchID {
 			break
@@ -137,22 +146,50 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			a.computeStartEnd()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
+	case samure.EventTouchMotion:
+		if a.touchID == nil || *a.touchID != e.TouchID {
+			break
+		}
+
+		a.pointer[0] = e.X + float64(a.touchFocus.Geo().X)
+		a.pointer[1] = e.Y + float64(a.touchFocus.Geo().Y)
+
+		switch a.state {
+		case StateDragNormal:
+			a.computeStartEnd()
+			ctx.SetRenderState(samure.RenderStateOnce)
+		}
 	case samure.EventPointerEnter:
 		e.Seat.SetPointerShape(samure.CursorShapeCrosshair)
 	case samure.EventKeyboardKey:
-		if e.State == samure.StateReleased {
-			switch e.Key {
-			case samure.KeyEsc:
-				a.start = [2]float64{0.0, 0.0}
-				a.end = a.start
+		if e.Key == samure.KeyEsc && e.State == samure.StateReleased {
+			a.start = [2]float64{0.0, 0.0}
+			a.end = a.start
+			ctx.SetRunning(false)
+			break
+		}
+
+		switch a.state {
+		case StateAlter:
+			if e.Key == samure.KeyEnter && e.State == samure.StateReleased {
 				ctx.SetRunning(false)
 			}
 		}
+
 	}
 }
 
 func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {
+	if a.state < StateAlter || a.state > StateDragLeft {
+		return
+	}
 
+	if a.grabberAnim < 1.0 {
+		a.grabberAnim = math.Min(a.grabberAnim+GrabberAnimSpeed*deltaTime, 1.0)
+		a.grabberRadius = easeOutElastic(a.grabberAnim) * flags.GrabberRadius
+		a.grabberBorderWidth = easeOutElastic(a.grabberAnim) * flags.BorderWidth
+		ctx.SetRenderState(samure.RenderStateOnce)
+	}
 }
 
 func (a *App) computeStartEnd() {
