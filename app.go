@@ -46,6 +46,8 @@ type App struct {
 
 	state       int
 	clearScreen bool
+	touchID     *int
+	touchFocus  samure.Output
 
 	backgroundColor [4]float64
 	selectionColor  [4]float64
@@ -84,6 +86,47 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			if e.Button == samure.ButtonLeft && e.State == samure.StateReleased {
 				ctx.SetRunning(false)
 			}
+		}
+	case samure.EventTouchDown:
+		if a.touchID != nil && *a.touchID != e.TouchID {
+			break
+		}
+
+		a.touchID = new(int)
+		*a.touchID = e.TouchID
+		a.touchFocus = e.Output
+
+		a.anchor[0] = e.X + float64(e.Output.Geo().X)
+		a.anchor[1] = e.Y + float64(e.Output.Geo().Y)
+
+		a.pointer = a.anchor
+		a.start = a.anchor
+		a.end = a.start
+
+		a.state = StateDragNormal
+		ctx.SetRenderState(samure.RenderStateOnce)
+	case samure.EventTouchMotion:
+		if a.touchID == nil || *a.touchID != e.TouchID {
+			break
+		}
+
+		a.pointer[0] = e.X + float64(a.touchFocus.Geo().X)
+		a.pointer[1] = e.Y + float64(a.touchFocus.Geo().Y)
+
+		switch a.state {
+		case StateDragNormal:
+			a.computeStartEnd()
+			ctx.SetRenderState(samure.RenderStateOnce)
+		}
+	case samure.EventTouchUp:
+		if a.touchID == nil || *a.touchID != e.TouchID {
+			break
+		}
+
+		switch a.state {
+		case StateDragNormal:
+			a.touchID = nil
+			ctx.SetRunning(false)
 		}
 	case samure.EventPointerMotion:
 		a.pointer[0] = e.X + float64(e.Seat.PointerFocus().Output().Geo().X)

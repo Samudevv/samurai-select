@@ -10,5 +10,5 @@ A screen selection tool for wlroots based wayland compositors. I thank [slurp](h
 + [x] Execute arbitrary command (--cmd flag), usable when freezing screen
 + [x] Show Coordinates and Dimensions (-t flag)
 + [ ] Alter selection after performing an initial selection
-+ [ ] Touch Support
++ [x] Touch Support (needs testing)
 + [x] Force aspect ratio (-a flag)
