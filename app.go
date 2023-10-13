@@ -229,14 +229,14 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			a.start[1] = y
 			a.end[0] = x + w
 			a.end[1] = y + h
-			a.handleOverlap()
+			a.handleOverlapAndAspectRatio()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragTop:
 			h += y - py
 			y = py
 			a.start[1] = y
 			a.end[1] = y + h
-			a.handleOverlap()
+			a.handleOverlapAndAspectRatio()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragTopRight:
 			w = px - x
@@ -245,24 +245,24 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			a.start[1] = y
 			a.end[0] = x + w
 			a.end[1] = y + h
-			a.handleOverlap()
+			a.handleOverlapAndAspectRatio()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragRight:
 			w = px - x
 			a.end[0] = x + w
-			a.handleOverlap()
+			a.handleOverlapAndAspectRatio()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragBottomRight:
 			w = px - x
 			h = py - y
 			a.end[0] = x + w
 			a.end[1] = y + h
-			a.handleOverlap()
+			a.handleOverlapAndAspectRatio()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragBottom:
 			h = py - y
 			a.end[1] = y + h
-			a.handleOverlap()
+			a.handleOverlapAndAspectRatio()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragBottomLeft:
 			w += x - px
@@ -271,14 +271,14 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			a.start[0] = x
 			a.end[0] = x + w
 			a.end[1] = y + h
-			a.handleOverlap()
+			a.handleOverlapAndAspectRatio()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		case StateDragLeft:
 			w += x - px
 			x = px
 			a.start[0] = x
 			a.end[0] = x + w
-			a.handleOverlap()
+			a.handleOverlapAndAspectRatio()
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
 	case samure.EventTouchMotion:
@@ -359,7 +359,7 @@ func (a App) pointerInGrabber(x, y, gx, gy float64) bool {
 	return (dx*dx + dy*dy) < r*r
 }
 
-func (a *App) handleOverlap() {
+func (a *App) handleOverlapAndAspectRatio() {
 	x := a.start[0]
 	y := a.start[1]
 	w := a.end[0] - a.start[0]
@@ -408,5 +408,42 @@ func (a *App) handleOverlap() {
 		case StateDragBottom:
 			a.state = StateDragTop
 		}
+	}
+
+	if a.aspect != 0.0 {
+		x = a.start[0]
+		y = a.start[1]
+		w = a.end[0] - a.start[0]
+		h = a.end[1] - a.start[1]
+
+		width := math.Max(w, h*a.aspect)
+		height := math.Max(h, w/a.aspect)
+
+		switch a.state {
+		case StateDragTopLeft:
+			x -= width - w
+			y -= height - h
+		case StateDragTopRight:
+			y -= height - h
+		case StateDragBottomLeft:
+			x -= width - w
+		case StateDragTop:
+			width = h * a.aspect
+			height = h
+		case StateDragBottom:
+			width = h * a.aspect
+			height = h
+		case StateDragLeft:
+			width = w
+			height = w / a.aspect
+		case StateDragRight:
+			width = w
+			height = w / a.aspect
+		}
+
+		a.start[0] = x
+		a.start[1] = y
+		a.end[0] = x + width
+		a.end[1] = y + height
 	}
 }
