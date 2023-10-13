@@ -153,6 +153,49 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 			c.ShowText(yStr)
 		}
 	}
+
+	if flags.Debug {
+		var stateStr string
+		switch a.state {
+		case StateNone:
+			stateStr = "StateNone"
+		case StateDragNormal:
+			stateStr = "StateDragNormal"
+		case StateAlter:
+			stateStr = "StateAlter"
+		case StateDragTopLeft:
+			stateStr = "StateDragTopLeft"
+		case StateDragTop:
+			stateStr = "StateDragTop"
+		case StateDragTopRight:
+			stateStr = "StateDragTopRight"
+		case StateDragRight:
+			stateStr = "StateDragRight"
+		case StateDragBottomRight:
+			stateStr = "StateDragBottomRight"
+		case StateDragBottom:
+			stateStr = "StateDragBottom"
+		case StateDragBottomLeft:
+			stateStr = "StateDragBottomLeft"
+		case StateDragLeft:
+			stateStr = "StateDragLeft"
+		default:
+			stateStr = "Invalid State"
+		}
+
+		c.SelectFontFace("sans-serif", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+		c.SetFontSize(30)
+		c.SetSourceRGBA(
+			1.0,
+			1.0,
+			0.0,
+			1.0,
+		)
+		ext := c.TextExtents(stateStr)
+
+		c.MoveTo(20, 20+ext.Height)
+		c.ShowText(stateStr)
+	}
 }
 
 func (a App) renderGrabbers(c *cairo.Context, o samure.Rect) {

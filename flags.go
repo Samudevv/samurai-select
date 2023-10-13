@@ -61,6 +61,7 @@ var flags struct {
 	ForceAspectRatio string  `short:"a" long:"aspect-ratio" description:"Force an aspect ratio for the selection box in the format w:h"`
 	AlterSelection   bool    `short:"A" long:"alter-selection" description:"This flag lets you change the selection box after releasing left click by dragging the box at the edges and corners"`
 	GrabberRadius    float64 `long:"grabber-radius" description:"The radius of the grabbers for altering the selection" default:"7"`
+	Debug            bool    `short:"d" long:"debug" description:"Show developer debug stuff"`
 }
 
 func CreateApp(argv []string) (*App, error) {

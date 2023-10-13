@@ -54,6 +54,7 @@ type App struct {
 	end     [2]float64 // The bottom right corner of the selection box
 	pointer [2]float64 // The raw position of the pointer in global coordinates
 	anchor  [2]float64 // The position where the pointer has been released
+	offset  [2]float64
 
 	state       int
 	clearScreen bool
@@ -108,6 +109,73 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 					ctx.SetRunning(false)
 				}
 			}
+		case StateAlter:
+			if e.Button == samure.ButtonLeft && e.State == samure.StatePressed {
+				px := a.pointer[0]
+				py := a.pointer[1]
+				x := a.start[0]
+				y := a.start[1]
+				w := a.end[0] - a.start[0]
+				h := a.end[1] - a.start[1]
+
+				if a.pointerInGrabber(px, py, x, y) {
+					a.offset[0] = x - px
+					a.offset[1] = y - py
+					a.state = StateDragTopLeft
+				} else if a.pointerInGrabber(px, py, x+w/2.0, y) {
+					a.offset[0] = x + w/2.0 - px
+					a.offset[1] = y - py
+					a.state = StateDragTop
+				} else if a.pointerInGrabber(px, py, x+w, y) {
+					a.offset[0] = x + w - px
+					a.offset[1] = y - py
+					a.state = StateDragTopRight
+				} else if a.pointerInGrabber(px, py, x+w, y+h/2.0) {
+					a.offset[0] = x + w - px
+					a.offset[1] = y + h/2.0 - py
+					a.state = StateDragRight
+				} else if a.pointerInGrabber(px, py, x+w, y+h) {
+					a.offset[0] = x + w - px
+					a.offset[1] = y + h - py
+					a.state = StateDragBottomRight
+				} else if a.pointerInGrabber(px, py, x+w/2.0, y+h) {
+					a.offset[0] = x + w/2.0 - px
+					a.offset[1] = y + h - py
+					a.state = StateDragBottom
+				} else if a.pointerInGrabber(px, py, x, y+h) {
+					a.offset[0] = x - px
+					a.offset[1] = y + h - py
+					a.state = StateDragBottomLeft
+				} else if a.pointerInGrabber(px, py, x, y+h/2.0) {
+					a.offset[0] = x - px
+					a.offset[1] = y + h/2.0 - py
+					a.state = StateDragLeft
+				} else {
+					a.grabberAnim = 0.0
+					a.anchor = a.pointer
+					a.computeStartEnd()
+					a.state = StateDragNormal
+					ctx.SetRenderState(samure.RenderStateOnce)
+				}
+			}
+		case StateDragTopLeft:
+			fallthrough
+		case StateDragTop:
+			fallthrough
+		case StateDragTopRight:
+			fallthrough
+		case StateDragRight:
+			fallthrough
+		case StateDragBottomRight:
+			fallthrough
+		case StateDragBottom:
+			fallthrough
+		case StateDragBottomLeft:
+			fallthrough
+		case StateDragLeft:
+			if e.Button == samure.ButtonLeft && e.State == samure.StateReleased {
+				a.state = StateAlter
+			}
 		}
 	case samure.EventTouchDown:
 		if a.touchID != nil && *a.touchID != e.TouchID {
@@ -141,9 +209,68 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		a.pointer[0] = e.X + float64(e.Seat.PointerFocus().Output().Geo().X)
 		a.pointer[1] = e.Y + float64(e.Seat.PointerFocus().Output().Geo().Y)
 
+		px := a.pointer[0] + a.offset[0]
+		py := a.pointer[1] + a.offset[1]
+		x := a.start[0]
+		y := a.start[1]
+		w := a.end[0] - a.start[0]
+		h := a.end[1] - a.start[1]
+
 		switch a.state {
 		case StateDragNormal:
 			a.computeStartEnd()
+			ctx.SetRenderState(samure.RenderStateOnce)
+		case StateDragTopLeft:
+			w += x - px
+			h += y - py
+			x = px
+			y = py
+			a.start[0] = x
+			a.start[1] = y
+			a.end[0] = x + w
+			a.end[1] = y + h
+			ctx.SetRenderState(samure.RenderStateOnce)
+		case StateDragTop:
+			h += y - py
+			y = py
+			a.start[1] = y
+			a.end[1] = y + h
+			ctx.SetRenderState(samure.RenderStateOnce)
+		case StateDragTopRight:
+			w = px - x
+			h += y - py
+			y = py
+			a.start[1] = y
+			a.end[0] = x + w
+			a.end[1] = y + h
+			ctx.SetRenderState(samure.RenderStateOnce)
+		case StateDragRight:
+			w = px - x
+			a.end[0] = x + w
+			ctx.SetRenderState(samure.RenderStateOnce)
+		case StateDragBottomRight:
+			w = px - x
+			h = py - y
+			a.end[0] = x + w
+			a.end[1] = y + h
+			ctx.SetRenderState(samure.RenderStateOnce)
+		case StateDragBottom:
+			h = py - y
+			a.end[1] = y + h
+			ctx.SetRenderState(samure.RenderStateOnce)
+		case StateDragBottomLeft:
+			w += x - px
+			x = px
+			h = py - y
+			a.start[0] = x
+			a.end[0] = x + w
+			a.end[1] = y + h
+			ctx.SetRenderState(samure.RenderStateOnce)
+		case StateDragLeft:
+			w += x - px
+			x = px
+			a.start[0] = x
+			a.end[0] = x + w
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
 	case samure.EventTouchMotion:
@@ -215,4 +342,11 @@ func (a *App) computeStartEnd() {
 		a.start[1] = a.anchor[1]
 		a.end[1] = a.anchor[1] + height + 1
 	}
+}
+
+func (a App) pointerInGrabber(x, y, gx, gy float64) bool {
+	dx := gx - x
+	dy := gy - y
+	r := a.grabberRadius + a.grabberBorderWidth/2.0
+	return (dx*dx + dy*dy) < r*r
 }
