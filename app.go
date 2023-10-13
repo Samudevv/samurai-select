@@ -37,6 +37,7 @@ const (
 	StateNone            = iota
 	StateDragNormal      = iota
 	StateAlter           = iota
+	StateDragMiddle      = iota
 	StateDragTopLeft     = iota
 	StateDragTop         = iota
 	StateDragTopRight    = iota
@@ -151,11 +152,22 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 					a.offset[1] = y + h/2.0 - py
 					a.state = StateDragLeft
 				} else {
-					a.grabberAnim = 0.0
-					a.anchor = a.pointer
-					a.computeStartEnd()
-					a.state = StateDragNormal
-					ctx.SetRenderState(samure.RenderStateOnce)
+					sel := samure.Rect{
+						X: int(x),
+						Y: int(y),
+						W: int(w),
+						H: int(h),
+					}
+
+					if sel.PointInOutput(int(a.pointer[0]), int(a.pointer[1])) {
+						a.state = StateDragMiddle
+					} else {
+						a.grabberAnim = 0.0
+						a.anchor = a.pointer
+						a.computeStartEnd()
+						a.state = StateDragNormal
+						ctx.SetRenderState(samure.RenderStateOnce)
+					}
 				}
 			}
 		case StateDragTopLeft:
@@ -173,6 +185,8 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		case StateDragBottomLeft:
 			fallthrough
 		case StateDragLeft:
+			fallthrough
+		case StateDragMiddle:
 			if e.Button == samure.ButtonLeft && e.State == samure.StateReleased {
 				a.state = StateAlter
 			}
@@ -206,11 +220,14 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			ctx.SetRunning(false)
 		}
 	case samure.EventPointerMotion:
-		a.pointer[0] = e.X + float64(e.Seat.PointerFocus().Output().Geo().X)
-		a.pointer[1] = e.Y + float64(e.Seat.PointerFocus().Output().Geo().Y)
-
-		px := a.pointer[0] + a.offset[0]
-		py := a.pointer[1] + a.offset[1]
+		px := e.X + float64(e.Seat.PointerFocus().Output().Geo().X)
+		py := e.Y + float64(e.Seat.PointerFocus().Output().Geo().Y)
+		dx := px - a.pointer[0]
+		dy := py - a.pointer[1]
+		a.pointer[0] = px
+		a.pointer[1] = py
+		px += a.offset[0]
+		py += a.offset[1]
 		x := a.start[0]
 		y := a.start[1]
 		w := a.end[0] - a.start[0]
@@ -279,6 +296,14 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			a.start[0] = x
 			a.end[0] = x + w
 			a.handleOverlapAndAspectRatio()
+			ctx.SetRenderState(samure.RenderStateOnce)
+		case StateDragMiddle:
+			x += dx
+			y += dy
+			a.start[0] = x
+			a.start[1] = y
+			a.end[0] = x + w
+			a.end[1] = y + h
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
 	case samure.EventTouchMotion:

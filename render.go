@@ -179,6 +179,8 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 			stateStr = "StateDragBottomLeft"
 		case StateDragLeft:
 			stateStr = "StateDragLeft"
+		case StateDragMiddle:
+			stateStr = "StateDragMiddle"
 		default:
 			stateStr = "Invalid State"
 		}
