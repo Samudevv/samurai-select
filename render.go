@@ -135,6 +135,13 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 			y + yExt.Height,
 		}
 
+		if a.state >= StateAlter && a.state <= StateDragLeft {
+			widthTextPos[1] += a.grabberRadius + a.grabberBorderWidth/2.0
+			heightTextPos[0] += a.grabberRadius + a.grabberBorderWidth/2.0
+			xTextPos[1] -= a.grabberRadius + a.grabberBorderWidth/2.0
+			yTextPos[0] -= a.grabberRadius + a.grabberBorderWidth/2.0
+		}
+
 		// Only render text if it's inside the output
 		if o.RectInOutput(int(widthTextPos[0])+o.X, int(widthTextPos[1])+o.Y, int(widthExt.Width), int(widthExt.Height)) {
 			c.MoveTo(widthTextPos[0], widthTextPos[1])
