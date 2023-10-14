@@ -12,3 +12,25 @@ A screen selection tool for wlroots based wayland compositors. I thank [slurp](h
 + [x] Alter selection after performing an initial selection (-A flag)
 + [x] Touch Support (needs testing)
 + [x] Force aspect ratio (-a flag)
+
+## Build
+
+To build it you need to have a [go compiler](https://go.dev/), C compiler (for cgo) and the following dependencies installed:
+
++ [Wayland Client Library](https://gitlab.freedesktop.org/wayland/wayland)
++ [Cairo](https://www.cairographics.org/)
+
+On Arch Linux you can install these dependencies like so:
+```
+sudo pacman -S --needed go gcc wayland cairo
+```
+
+Then call this to build it:
+```
+go build -v -o smel
+```
+
+Or this to install it:
+```
+go install -v && ln -s $GOPATH/bin/samurai-select $GOPATH/bin/smel
+```
