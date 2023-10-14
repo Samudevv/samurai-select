@@ -62,6 +62,7 @@ var flags struct {
 	AlterSelection   bool    `short:"A" long:"alter-selection" description:"This flag lets you change the selection box after releasing left click by dragging the box at the edges and corners"`
 	GrabberRadius    float64 `long:"grabber-radius" description:"The radius of the grabbers for altering the selection" default:"7"`
 	Debug            bool    `short:"d" long:"debug" description:"Show developer debug stuff"`
+	NoAnimation      bool    `long:"no-anim" description:"Disable the bouncing animation of the grabbers if alter selection is enabled"`
 }
 
 func CreateApp(argv []string) (*App, error) {

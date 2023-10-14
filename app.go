@@ -95,7 +95,12 @@ func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {
 	}
 
 	if a.grabberAnim < 1.0 {
-		a.grabberAnim = math.Min(a.grabberAnim+GrabberAnimSpeed*deltaTime, 1.0)
+		if flags.NoAnimation {
+			a.grabberAnim = 1.0
+		} else {
+			a.grabberAnim = math.Min(a.grabberAnim+GrabberAnimSpeed*deltaTime, 1.0)
+		}
+
 		a.grabberRadius = easeOutElastic(a.grabberAnim) * flags.GrabberRadius
 		a.grabberBorderWidth = easeOutElastic(a.grabberAnim) * flags.BorderWidth
 		ctx.SetRenderState(samure.RenderStateOnce)
