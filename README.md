@@ -13,6 +13,14 @@ A screen selection tool for wlroots based wayland compositors. I thank [slurp](h
 + [x] Touch Support (needs testing)
 + [x] Force aspect ratio (-a flag)
 
+## Install
+
+If you have the dependencies listed under [Build](#Build) installed you can just install this program without having the source code by calling
+
+```bash
+go install github.com/PucklaJ/samurai-select@latest && ln -s $GOPATH/bin/samurai-select $GOPATH/bin/smel
+```
+
 ## Build
 
 To build it you need to have a [go compiler](https://go.dev/), C compiler (for cgo) and the following dependencies installed:
@@ -33,12 +41,4 @@ go build -v -o smel
 Or this to install it:
 ```bash
 go install -v && ln -s $GOPATH/bin/samurai-select $GOPATH/bin/smel
-```
-
-## Install
-
-If you have the dependencies listed above installed you can just install this program with having the source code by calling
-
-```bash
-go install github.com/PucklaJ/samurai-select@latest && ln -s $GOPATH/bin/samurai-select $GOPATH/bin/smel
 ```
