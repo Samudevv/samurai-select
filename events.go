@@ -196,6 +196,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			case samure.StateReleased:
 				a.pointerUp(ctx)
 			}
+			e.Seat.SetPointerShape(a.getCursorShape())
 		}
 	case samure.EventTouchDown:
 		if a.touchID != nil && *a.touchID != e.TouchID {
@@ -222,6 +223,9 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		dx := px - a.pointer[0]
 		dy := py - a.pointer[1]
 		a.pointer[0], a.pointer[1] = px, py
+
+		e.Seat.SetPointerShape(a.getCursorShape())
+
 		a.pointerMove(ctx, px, py, dx, dy)
 	case samure.EventTouchMotion:
 		if a.touchID == nil || *a.touchID != e.TouchID {
@@ -235,7 +239,10 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		a.pointer[0], a.pointer[1] = px, py
 		a.pointerMove(ctx, px, py, dx, dy)
 	case samure.EventPointerEnter:
-		e.Seat.SetPointerShape(samure.CursorShapeCrosshair)
+		switch a.state {
+		case StateNone:
+			e.Seat.SetPointerShape(samure.CursorShapeCrosshair)
+		}
 	case samure.EventKeyboardKey:
 		if e.Key == samure.KeyEsc && e.State == samure.StateReleased {
 			a.start = [2]float64{0.0, 0.0}
@@ -372,5 +379,70 @@ func (a *App) handleOverlapAndAspectRatio() {
 		a.start[1] = y
 		a.end[0] = x + width
 		a.end[1] = y + height
+	}
+}
+
+func (a *App) getCursorShape() int {
+	switch a.state {
+	case StateNone, StateDragNormal:
+		return samure.CursorShapeCrosshair
+	case StateAlter:
+		px := a.pointer[0]
+		py := a.pointer[1]
+		x := a.start[0]
+		y := a.start[1]
+		w := a.end[0] - a.start[0]
+		h := a.end[1] - a.start[1]
+
+		if a.pointerInGrabber(px, py, x, y) {
+			return samure.CursorShapeNwResize
+		} else if a.pointerInGrabber(px, py, x+w/2.0, y) {
+			return samure.CursorShapeNResize
+		} else if a.pointerInGrabber(px, py, x+w, y) {
+			return samure.CursorShapeNeResize
+		} else if a.pointerInGrabber(px, py, x+w, y+h/2.0) {
+			return samure.CursorShapeEResize
+		} else if a.pointerInGrabber(px, py, x+w, y+h) {
+			return samure.CursorShapeSeResize
+		} else if a.pointerInGrabber(px, py, x+w/2.0, y+h) {
+			return samure.CursorShapeSResize
+		} else if a.pointerInGrabber(px, py, x, y+h) {
+			return samure.CursorShapeSwResize
+		} else if a.pointerInGrabber(px, py, x, y+h/2.0) {
+			return samure.CursorShapeWResize
+		} else {
+			sel := samure.Rect{
+				X: int(x),
+				Y: int(y),
+				W: int(w),
+				H: int(h),
+			}
+
+			if sel.PointInOutput(int(px), int(py)) {
+				return samure.CursorShapeGrab
+			} else {
+				return samure.CursorShapeCrosshair
+			}
+		}
+	case StateDragMiddle:
+		return samure.CursorShapeGrabbing
+	case StateDragTopLeft:
+		return samure.CursorShapeNwResize
+	case StateDragTop:
+		return samure.CursorShapeNResize
+	case StateDragTopRight:
+		return samure.CursorShapeNeResize
+	case StateDragRight:
+		return samure.CursorShapeEResize
+	case StateDragBottomRight:
+		return samure.CursorShapeSeResize
+	case StateDragBottom:
+		return samure.CursorShapeSResize
+	case StateDragBottomLeft:
+		return samure.CursorShapeSwResize
+	case StateDragLeft:
+		return samure.CursorShapeWResize
+	default:
+		return samure.CursorShapeDefault
 	}
 }
