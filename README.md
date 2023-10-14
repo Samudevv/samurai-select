@@ -31,6 +31,14 @@ go build -v -o smel
 ```
 
 Or this to install it:
-```
+```bash
 go install -v && ln -s $GOPATH/bin/samurai-select $GOPATH/bin/smel
+```
+
+## Install
+
+If you have the dependencies listed above installed you can just install this program with having the source code by calling
+
+```bash
+go install github.com/PucklaJ/samurai-select@latest && ln -s $GOPATH/bin/samurai-select $GOPATH/bin/smel
 ```

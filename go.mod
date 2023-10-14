@@ -1,4 +1,4 @@
-module github.com/PucklaJ/smel
+module github.com/PucklaJ/samurai-select
 
 go 1.21.1
 
