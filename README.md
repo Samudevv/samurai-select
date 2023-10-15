@@ -12,6 +12,12 @@ A screen selection tool for wlroots based wayland compositors. I thank [slurp](h
 + [x] Alter selection after performing an initial selection (-A flag)
 + [x] Touch Support (needs testing)
 + [x] Force aspect ratio (-a flag)
++ [ ] Select certain regions of screen (e.g. windows)
+  + [ ] Hyprland support
+  + [ ] Sway support
+  + [ ] Arbitrary (either stdin or via argument)
++ [ ] Select whole outputs
++ [ ] Multiple seat support
 
 ## Install
 
