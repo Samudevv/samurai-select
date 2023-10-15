@@ -1,6 +1,5 @@
 .*
 !.gitignore
-go.sum
 samurai-select
 smel
 *.png
