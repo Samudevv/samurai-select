@@ -48,14 +48,23 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 	)
 	c.Paint()
 
-	if a.state == StateNone {
+	if (a.state == StateNone || !isRegionAnimSet(a.chosenRegionAnim)) && !flags.Debug {
 		return
 	}
 
-	xGlobal := a.start[0]
-	yGlobal := a.start[1]
-	w := a.end[0] - a.start[0]
-	h := a.end[1] - a.start[1]
+	var xGlobal, yGlobal, w, h float64
+
+	if a.state == StateChooseRegion {
+		xGlobal = a.chosenRegionAnim[0]
+		yGlobal = a.chosenRegionAnim[1]
+		w = a.chosenRegionAnim[2]
+		h = a.chosenRegionAnim[3]
+	} else {
+		xGlobal = a.start[0]
+		yGlobal = a.start[1]
+		w = a.end[0] - a.start[0]
+		h = a.end[1] - a.start[1]
+	}
 
 	if o.RectInOutput(int(xGlobal), int(yGlobal), int(w), int(h)) {
 		x := o.RelX(xGlobal)
@@ -188,6 +197,8 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 			stateStr = "StateDragLeft"
 		case StateDragMiddle:
 			stateStr = "StateDragMiddle"
+		case StateChooseRegion:
+			stateStr = "StateChooseRegion"
 		default:
 			stateStr = "Invalid State"
 		}
@@ -200,10 +211,24 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 			0.0,
 			1.0,
 		)
-		ext := c.TextExtents(stateStr)
 
-		c.MoveTo(20, 20+ext.Height)
-		c.ShowText(stateStr)
+		debugStrings := []string{
+			stateStr,
+			fmt.Sprintf("xGlobal=%.1f", xGlobal),
+			fmt.Sprintf("yGlobal=%.1f", yGlobal),
+			fmt.Sprintf("w=%.1f", w),
+			fmt.Sprintf("h=%.1f", h),
+			fmt.Sprintf("App.regionAnim=%.1f", a.regionAnim),
+		}
+
+		var yPos float64 = 15.0
+
+		for _, s := range debugStrings {
+			ext := c.TextExtents(stateStr)
+			yPos += ext.Height + 5.0
+			c.MoveTo(20, yPos)
+			c.ShowText(s)
+		}
 	}
 }
 

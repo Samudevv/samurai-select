@@ -63,6 +63,7 @@ var flags struct {
 	GrabberRadius    float64 `long:"grabber-radius" description:"The radius of the grabbers for altering the selection" default:"7"`
 	Debug            bool    `short:"d" long:"debug" description:"Show developer debug stuff"`
 	NoAnimation      bool    `long:"no-anim" description:"Disable the bouncing animation of the grabbers if alter selection is enabled"`
+	Regions          string  `short:"r" long:"regions" description:"Choose from predefined regions (e.g. windows) on the screen." optional-value:"auto" default:"none" choice:"none" choice:"auto" choice:"hyprland"`
 }
 
 func CreateApp(argv []string) (*App, error) {
@@ -148,6 +149,21 @@ func CreateApp(argv []string) (*App, error) {
 			a.aspect = float64(w) / float64(h)
 			break
 		}
+	}
+
+	switch flags.Regions {
+	case "none":
+	case "auto":
+		fmt.Fprintf(os.Stderr, "Auto regions are not implemented yet\n")
+	case "hyprland":
+		a.regionsObj = &HyprlandRegions{}
+	default:
+		fmt.Fprintf(os.Stderr, "Invalid regions: \"%s\"\n", flags.Regions)
+	}
+
+	if a.regionsObj != nil {
+		a.regions = a.regionsObj.OutputRegions()
+		a.state = StateChooseRegion
 	}
 
 	return a, nil

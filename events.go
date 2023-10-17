@@ -96,6 +96,10 @@ func (a *App) pointerDown(ctx samure.Context, px, py float64) {
 				ctx.SetRenderState(samure.RenderStateOnce)
 			}
 		}
+	case StateChooseRegion:
+		if isRegionSet(a.chosenRegion) {
+			ctx.SetRunning(false)
+		}
 	}
 }
 
@@ -209,6 +213,23 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 		a.end[0] = x + w
 		a.end[1] = y + h
 		ctx.SetRenderState(samure.RenderStateOnce)
+	case StateChooseRegion:
+		prevRegion := a.chosenRegion
+		unsetRegion(&a.chosenRegion)
+
+		for i := range a.regions {
+			if a.regions[i].PointInOutput(int(px), int(py)) {
+				a.chosenRegion = a.regions[i]
+			}
+		}
+
+		if a.chosenRegion != prevRegion {
+			if isRegionSet(a.chosenRegion) {
+				a.regionAnim = 0.0
+			}
+
+			ctx.SetRenderState(samure.RenderStateOnce)
+		}
 	}
 }
 
@@ -273,6 +294,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		if e.Key == samure.KeyEsc && e.State == samure.StateReleased {
 			a.start = [2]float64{0.0, 0.0}
 			a.end = a.start
+			unsetRegion(&a.chosenRegion)
 			ctx.SetRunning(false)
 			break
 		}
@@ -468,6 +490,12 @@ func (a *App) getCursorShape() int {
 		return samure.CursorShapeSwResize
 	case StateDragLeft:
 		return samure.CursorShapeWResize
+	case StateChooseRegion:
+		if isRegionSet(a.chosenRegion) {
+			return samure.CursorShapePointer
+		} else {
+			return samure.CursorShapeDefault
+		}
 	default:
 		return samure.CursorShapeDefault
 	}

@@ -46,8 +46,10 @@ const (
 	StateDragBottom      = iota
 	StateDragBottomLeft  = iota
 	StateDragLeft        = iota
+	StateChooseRegion    = iota
 
 	GrabberAnimSpeed = 1.4
+	RegionAnimSpeed  = 1.0
 )
 
 type App struct {
@@ -66,6 +68,10 @@ type App struct {
 	grabberRadius      float64
 	grabberBorderWidth float64
 
+	chosenRegion     samure.Rect
+	regionAnim       float64
+	chosenRegionAnim [4]float64
+
 	backgroundColor    [4]float64
 	selectionColor     [4]float64
 	borderColor        [4]float64
@@ -74,11 +80,17 @@ type App struct {
 	grabberBorderColor [4]float64
 	padding            float64
 	aspect             float64
+	regionsObj         Regions
+	regions            []samure.Rect
 }
 
 func (a App) GetSelection() (samure.Rect, error) {
-	if a.start[0] == 0.0 && a.start[1] == 0.0 && a.end[0] == 0.0 && a.end[1] == 0.0 {
+	if a.start[0] == 0.0 && a.start[1] == 0.0 && a.end[0] == 0.0 && a.end[1] == 0.0 && !isRegionSet(a.chosenRegion) {
 		return samure.Rect{}, errors.New("selection cancelled")
+	}
+
+	if isRegionSet(a.chosenRegion) {
+		return a.chosenRegion, nil
 	}
 
 	return samure.Rect{
@@ -90,19 +102,56 @@ func (a App) GetSelection() (samure.Rect, error) {
 }
 
 func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {
-	if a.state < StateAlter || a.state > StateDragLeft {
-		return
-	}
+	if a.state >= StateAlter && a.state <= StateDragLeft {
+		if a.grabberAnim < 1.0 {
+			if flags.NoAnimation {
+				a.grabberAnim = 1.0
+			} else {
+				a.grabberAnim = math.Min(a.grabberAnim+GrabberAnimSpeed*deltaTime, 1.0)
+			}
 
-	if a.grabberAnim < 1.0 {
-		if flags.NoAnimation {
-			a.grabberAnim = 1.0
-		} else {
-			a.grabberAnim = math.Min(a.grabberAnim+GrabberAnimSpeed*deltaTime, 1.0)
+			a.grabberRadius = easeOutElastic(a.grabberAnim) * flags.GrabberRadius
+			a.grabberBorderWidth = easeOutElastic(a.grabberAnim) * flags.BorderWidth
+			ctx.SetRenderState(samure.RenderStateOnce)
 		}
-
-		a.grabberRadius = easeOutElastic(a.grabberAnim) * flags.GrabberRadius
-		a.grabberBorderWidth = easeOutElastic(a.grabberAnim) * flags.BorderWidth
-		ctx.SetRenderState(samure.RenderStateOnce)
+	} else if a.state == StateChooseRegion {
+		if isRegionSet(a.chosenRegion) {
+			if a.regionAnim < 1.0 {
+				a.regionAnim = 1.0
+				a.chosenRegionAnim[0] = float64(a.chosenRegion.X)
+				a.chosenRegionAnim[1] = float64(a.chosenRegion.Y)
+				a.chosenRegionAnim[2] = float64(a.chosenRegion.W)
+				a.chosenRegionAnim[3] = float64(a.chosenRegion.H)
+				ctx.SetRenderState(samure.RenderStateOnce)
+			}
+		} else {
+			a.chosenRegionAnim[0] = 0.0
+			a.chosenRegionAnim[1] = 0.0
+			a.chosenRegionAnim[2] = 0.0
+			a.chosenRegionAnim[3] = 0.0
+			ctx.SetRenderState(samure.RenderStateOnce)
+		}
 	}
+}
+
+func isRegionSet(r samure.Rect) bool {
+	return r.X != 0 || r.Y != 0 || r.W != 0 || r.H != 0
+}
+
+func isRegionAnimSet(r [4]float64) bool {
+	return r[0] != 0 || r[1] != 0 || r[2] != 0 || r[3] != 0
+}
+
+func unsetRegion(r *samure.Rect) {
+	r.X = 0
+	r.Y = 0
+	r.W = 0
+	r.H = 0
+}
+
+func differsRegion(r samure.Rect, t [4]float64) bool {
+	return float64(r.X) != t[0] ||
+		float64(r.Y) != t[1] ||
+		float64(r.W) != t[2] ||
+		float64(r.H) != t[3]
 }
