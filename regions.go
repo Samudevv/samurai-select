@@ -29,8 +29,10 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	samure "github.com/PucklaJ/samurai-render-go"
@@ -38,6 +40,7 @@ import (
 
 type Regions interface {
 	OutputRegions() []samure.Rect
+	CursorPos() (int, int, error)
 }
 
 func DetectRegions() Regions {
@@ -143,4 +146,39 @@ func (*HyprlandRegions) OutputRegions() (rs []samure.Rect) {
 	}
 
 	return
+}
+
+func (*HyprlandRegions) CursorPos() (int, int, error) {
+	hyprctlPath, err := exec.LookPath("hyprctl")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var stdout strings.Builder
+
+	hyprctl := exec.Command(hyprctlPath, "cursorpos")
+	hyprctl.Stderr = os.Stderr
+	hyprctl.Stdout = &stdout
+	if err = hyprctl.Run(); err != nil {
+		return 0, 0, err
+	}
+
+	words := strings.Split(stdout.String(), ",")
+	if len(words) != 2 {
+		return 0, 0, errors.New("Invalid output")
+	}
+
+	xStr := strings.TrimSpace(words[0])
+	yStr := strings.TrimSpace(words[1])
+
+	x, err := strconv.ParseUint(xStr, 10, 64)
+	if err != nil {
+		return 0, 0, err
+	}
+	y, err := strconv.ParseUint(yStr, 10, 64)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return int(x), int(y), nil
 }

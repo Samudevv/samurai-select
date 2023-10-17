@@ -165,8 +165,23 @@ func CreateApp(argv []string) (*App, error) {
 	}
 
 	if a.regionsObj != nil {
-		a.regions = a.regionsObj.OutputRegions()
 		a.state = StateChooseRegion
+		a.regions = a.regionsObj.OutputRegions()
+		x, y, err := a.regionsObj.CursorPos()
+		if err == nil {
+			for i := range a.regions {
+				if a.regions[i].PointInOutput(x, y) {
+					a.chosenRegion = a.regions[i]
+				}
+			}
+
+			if isRegionSet(a.chosenRegion) {
+				a.currentRegionAnim[0] = float64(a.chosenRegion.X)
+				a.currentRegionAnim[1] = float64(a.chosenRegion.Y)
+				a.currentRegionAnim[2] = float64(a.chosenRegion.X + a.chosenRegion.W)
+				a.currentRegionAnim[3] = float64(a.chosenRegion.Y + a.chosenRegion.H)
+			}
+		}
 	}
 
 	a.regionAnim = 1.0

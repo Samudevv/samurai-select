@@ -57,6 +57,10 @@ func run() int {
 	}
 	defer ctx.Destroy()
 
+	if isRegionSet(a.chosenRegion) {
+		ctx.SetPointerShape(samure.CursorShapePointer)
+	}
+
 	if flags.FreezeScreen {
 		for i := 0; i < ctx.LenOutputs(); i++ {
 			o := ctx.Output(i)
