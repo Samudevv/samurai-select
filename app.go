@@ -124,12 +124,16 @@ func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {
 				a.regionAnim = math.Min(a.regionAnim+RegionAnimSpeed*deltaTime, 5.0)
 			}
 
-			a.currentRegionAnim[0] = a.startRegionAnim[0] + (a.endRegionAnim[0]-a.startRegionAnim[0])*easeOutQuint(a.regionAnim)
-			a.currentRegionAnim[1] = a.startRegionAnim[1] + (a.endRegionAnim[1]-a.startRegionAnim[1])*easeOutQuint(a.regionAnim)
-			a.currentRegionAnim[2] = a.startRegionAnim[2] + (a.endRegionAnim[2]-a.startRegionAnim[2])*easeOutQuint(a.regionAnim)
-			a.currentRegionAnim[3] = a.startRegionAnim[3] + (a.endRegionAnim[3]-a.startRegionAnim[3])*easeOutQuint(a.regionAnim)
+			for i := 0; i < 4; i++ {
+				a.currentRegionAnim[i] = a.startRegionAnim[i] + (a.endRegionAnim[i]-a.startRegionAnim[i])*easeOutQuint(a.regionAnim)
+			}
 
 			ctx.SetRenderState(samure.RenderStateOnce)
+		}
+
+		if !flags.FreezeScreen && a.regionsObj != nil {
+			a.regions = a.regionsObj.OutputRegions()
+			a.pointerMove(ctx, a.pointer[0], a.pointer[1], 0.0, 0.0)
 		}
 	}
 }

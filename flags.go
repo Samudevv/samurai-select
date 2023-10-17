@@ -169,6 +169,9 @@ func CreateApp(argv []string) (*App, error) {
 		a.regions = a.regionsObj.OutputRegions()
 		x, y, err := a.regionsObj.CursorPos()
 		if err == nil {
+			a.pointer[0] = float64(x)
+			a.pointer[1] = float64(y)
+
 			for i := range a.regions {
 				if a.regions[i].PointInOutput(x, y) {
 					a.chosenRegion = a.regions[i]
