@@ -100,6 +100,8 @@ func (a *App) pointerDown(ctx samure.Context, px, py float64) {
 		if isRegionSet(a.chosenRegion) {
 			ctx.SetRunning(false)
 		}
+	case StateChooseOutput:
+		ctx.SetRunning(false)
 	}
 }
 
@@ -256,6 +258,20 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
+	case StateChooseOutput:
+		prevOutput := a.chosenOutput
+		a.chosenOutput = samure.Output{Handle: nil}
+
+		for i := 0; i < ctx.LenOutputs(); i++ {
+			if ctx.Output(i).PointInOutput(int(px), int(py)) {
+				a.chosenOutput = ctx.Output(i)
+				break
+			}
+		}
+
+		if a.chosenOutput != prevOutput {
+			ctx.SetRenderState(samure.RenderStateOnce)
+		}
 	}
 }
 
@@ -321,6 +337,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			a.start = [2]float64{0.0, 0.0}
 			a.end = a.start
 			unsetRegion(&a.chosenRegion)
+			a.chosenOutput.Handle = nil
 			ctx.SetRunning(false)
 			break
 		}
@@ -522,6 +539,8 @@ func (a *App) getCursorShape() int {
 		} else {
 			return samure.CursorShapeDefault
 		}
+	case StateChooseOutput:
+		return samure.CursorShapePointer
 	default:
 		return samure.CursorShapeDefault
 	}

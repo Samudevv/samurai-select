@@ -28,6 +28,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -64,6 +65,7 @@ var flags struct {
 	Debug            bool    `short:"d" long:"debug" description:"Show developer debug stuff"`
 	NoAnimation      bool    `long:"no-anim" description:"Disable the bouncing animation of the grabbers if alter selection is enabled"`
 	Regions          string  `short:"r" long:"regions" description:"Choose from predefined regions (e.g. windows) on the screen." optional:"1" optional-value:"auto" default:"none" choice:"none" choice:"auto" choice:"hyprland"`
+	Outputs          bool    `short:"p" long:"outputs" descriptions:"Choose an output"`
 }
 
 func CreateApp(argv []string) (*App, error) {
@@ -165,6 +167,10 @@ func CreateApp(argv []string) (*App, error) {
 	}
 
 	if a.regionsObj != nil {
+		if flags.Outputs {
+			return nil, errors.New("Can not choose regions and outputs at the same time")
+		}
+
 		a.state = StateChooseRegion
 		a.regions = a.regionsObj.OutputRegions()
 		x, y, err := a.regionsObj.CursorPos()
@@ -188,6 +194,11 @@ func CreateApp(argv []string) (*App, error) {
 	}
 
 	a.regionAnim = 1.0
+
+	if flags.Outputs {
+		a.state = StateChooseOutput
+		a.regionsObj = DetectRegions()
+	}
 
 	return a, nil
 }

@@ -61,6 +61,22 @@ func run() int {
 		ctx.SetPointerShape(samure.CursorShapePointer)
 	}
 
+	if a.state == StateChooseOutput {
+		if a.regionsObj != nil {
+			x, y, err := a.regionsObj.CursorPos()
+			if err == nil {
+				a.pointer[0] = float64(x)
+				a.pointer[1] = float64(y)
+				for i := 0; i < ctx.LenOutputs(); i++ {
+					if ctx.Output(i).PointInOutput(int(a.pointer[0]), int(a.pointer[1])) {
+						a.chosenOutput = ctx.Output(i)
+					}
+				}
+			}
+		}
+		ctx.SetPointerShape(samure.CursorShapePointer)
+	}
+
 	if flags.FreezeScreen {
 		for i := 0; i < ctx.LenOutputs(); i++ {
 			o := ctx.Output(i)

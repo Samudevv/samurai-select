@@ -39,6 +39,30 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 	c := samure_cairo.Get(layerSurface)
 	c.SetOperator(cairo.OPERATOR_SOURCE)
 
+	if a.state == StateChooseOutput {
+		if a.chosenOutput.Handle != nil && a.chosenOutput.Geo() == o {
+			if a.clearScreen {
+				c.SetSourceRGBA(0.0, 0.0, 0.0, 0.0)
+			} else {
+				c.SetSourceRGBA(
+					a.selectionColor[0],
+					a.selectionColor[1],
+					a.selectionColor[2],
+					a.selectionColor[3],
+				)
+			}
+		} else {
+			c.SetSourceRGBA(
+				a.backgroundColor[0],
+				a.backgroundColor[1],
+				a.backgroundColor[2],
+				a.backgroundColor[3],
+			)
+		}
+		c.Paint()
+		return
+	}
+
 	// Clear the screen with the background color
 	c.SetSourceRGBA(
 		a.backgroundColor[0],
@@ -48,7 +72,9 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 	)
 	c.Paint()
 
-	if (a.state == StateNone || (a.state == StateChooseRegion && !isRegionAnimSet(a.currentRegionAnim))) && !flags.Debug {
+	if (a.state == StateNone ||
+		(a.state == StateChooseRegion && !isRegionAnimSet(a.currentRegionAnim))) &&
+		!flags.Debug {
 		return
 	}
 

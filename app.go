@@ -47,6 +47,7 @@ const (
 	StateDragBottomLeft  = iota
 	StateDragLeft        = iota
 	StateChooseRegion    = iota
+	StateChooseOutput    = iota
 
 	GrabberAnimSpeed = 1.4
 	RegionAnimSpeed  = 2.5
@@ -74,6 +75,8 @@ type App struct {
 	startRegionAnim   [4]float64
 	endRegionAnim     [4]float64
 
+	chosenOutput samure.Output
+
 	backgroundColor    [4]float64
 	selectionColor     [4]float64
 	borderColor        [4]float64
@@ -87,12 +90,23 @@ type App struct {
 }
 
 func (a App) GetSelection() (samure.Rect, error) {
-	if a.start[0] == 0.0 && a.start[1] == 0.0 && a.end[0] == 0.0 && a.end[1] == 0.0 && !isRegionSet(a.chosenRegion) {
-		return samure.Rect{}, errors.New("selection cancelled")
+	if a.state == StateChooseRegion {
+		if isRegionSet(a.chosenRegion) {
+			return a.chosenRegion, nil
+		} else {
+			return samure.Rect{}, errors.New("selection cancelled")
+		}
 	}
 
-	if isRegionSet(a.chosenRegion) {
-		return a.chosenRegion, nil
+	if a.state == StateChooseOutput {
+		if a.chosenOutput.Handle == nil {
+			return samure.Rect{}, errors.New("selection cancelled")
+		}
+		return a.chosenOutput.Geo(), nil
+	}
+
+	if a.start[0] == 0.0 && a.start[1] == 0.0 && a.end[0] == 0.0 && a.end[1] == 0.0 {
+		return samure.Rect{}, errors.New("selection cancelled")
 	}
 
 	return samure.Rect{
@@ -121,7 +135,7 @@ func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {
 			if flags.NoAnimation {
 				a.regionAnim = 1.0
 			} else {
-				a.regionAnim = math.Min(a.regionAnim+RegionAnimSpeed*deltaTime, 5.0)
+				a.regionAnim = math.Min(a.regionAnim+RegionAnimSpeed*deltaTime, 1.0)
 			}
 
 			for i := 0; i < 4; i++ {
