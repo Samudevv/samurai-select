@@ -49,7 +49,7 @@ const (
 	StateChooseRegion    = iota
 
 	GrabberAnimSpeed = 1.4
-	RegionAnimSpeed  = 1.0
+	RegionAnimSpeed  = 2.5
 )
 
 type App struct {
@@ -68,9 +68,11 @@ type App struct {
 	grabberRadius      float64
 	grabberBorderWidth float64
 
-	chosenRegion     samure.Rect
-	regionAnim       float64
-	chosenRegionAnim [4]float64
+	chosenRegion      samure.Rect
+	regionAnim        float64
+	currentRegionAnim [4]float64
+	startRegionAnim   [4]float64
+	endRegionAnim     [4]float64
 
 	backgroundColor    [4]float64
 	selectionColor     [4]float64
@@ -115,20 +117,18 @@ func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
 	} else if a.state == StateChooseRegion {
-		if isRegionSet(a.chosenRegion) {
-			if a.regionAnim < 1.0 {
+		if a.regionAnim < 1.0 {
+			if flags.NoAnimation {
 				a.regionAnim = 1.0
-				a.chosenRegionAnim[0] = float64(a.chosenRegion.X)
-				a.chosenRegionAnim[1] = float64(a.chosenRegion.Y)
-				a.chosenRegionAnim[2] = float64(a.chosenRegion.W)
-				a.chosenRegionAnim[3] = float64(a.chosenRegion.H)
-				ctx.SetRenderState(samure.RenderStateOnce)
+			} else {
+				a.regionAnim = math.Min(a.regionAnim+RegionAnimSpeed*deltaTime, 5.0)
 			}
-		} else {
-			a.chosenRegionAnim[0] = 0.0
-			a.chosenRegionAnim[1] = 0.0
-			a.chosenRegionAnim[2] = 0.0
-			a.chosenRegionAnim[3] = 0.0
+
+			a.currentRegionAnim[0] = a.startRegionAnim[0] + (a.endRegionAnim[0]-a.startRegionAnim[0])*easeOutQuint(a.regionAnim)
+			a.currentRegionAnim[1] = a.startRegionAnim[1] + (a.endRegionAnim[1]-a.startRegionAnim[1])*easeOutQuint(a.regionAnim)
+			a.currentRegionAnim[2] = a.startRegionAnim[2] + (a.endRegionAnim[2]-a.startRegionAnim[2])*easeOutQuint(a.regionAnim)
+			a.currentRegionAnim[3] = a.startRegionAnim[3] + (a.endRegionAnim[3]-a.startRegionAnim[3])*easeOutQuint(a.regionAnim)
+
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
 	}

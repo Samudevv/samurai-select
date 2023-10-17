@@ -48,17 +48,17 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 	)
 	c.Paint()
 
-	if (a.state == StateNone || (a.state == StateChooseRegion && !isRegionAnimSet(a.chosenRegionAnim))) && !flags.Debug {
+	if (a.state == StateNone || (a.state == StateChooseRegion && !isRegionAnimSet(a.currentRegionAnim))) && !flags.Debug {
 		return
 	}
 
 	var xGlobal, yGlobal, w, h float64
 
 	if a.state == StateChooseRegion {
-		xGlobal = a.chosenRegionAnim[0]
-		yGlobal = a.chosenRegionAnim[1]
-		w = a.chosenRegionAnim[2]
-		h = a.chosenRegionAnim[3]
+		xGlobal = a.currentRegionAnim[0]
+		yGlobal = a.currentRegionAnim[1]
+		w = a.currentRegionAnim[2] - a.currentRegionAnim[0]
+		h = a.currentRegionAnim[3] - a.currentRegionAnim[1]
 	} else {
 		xGlobal = a.start[0]
 		yGlobal = a.start[1]
@@ -284,4 +284,8 @@ func easeOutElastic(x float64) float64 {
 	}
 
 	return math.Pow(2.0, -10.0*x)*math.Sin((x*10.0-0.75)*c4) + 1.0
+}
+
+func easeOutQuint(x float64) float64 {
+	return 1.0 - math.Pow(1.0-x, 5.0)
 }

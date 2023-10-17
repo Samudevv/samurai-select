@@ -169,6 +169,8 @@ func CreateApp(argv []string) (*App, error) {
 		a.state = StateChooseRegion
 	}
 
+	a.regionAnim = 1.0
+
 	return a, nil
 }
 

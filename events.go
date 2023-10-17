@@ -224,9 +224,35 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 		}
 
 		if a.chosenRegion != prevRegion {
-			if isRegionSet(a.chosenRegion) {
-				a.regionAnim = 0.0
+			if a.regionAnim < 1.0 {
+				a.startRegionAnim = a.currentRegionAnim
+			} else {
+				if isRegionSet(prevRegion) {
+					a.startRegionAnim[0] = float64(prevRegion.X)
+					a.startRegionAnim[1] = float64(prevRegion.Y)
+					a.startRegionAnim[2] = float64(prevRegion.X + prevRegion.W)
+					a.startRegionAnim[3] = float64(prevRegion.Y + prevRegion.H)
+				} else {
+					a.startRegionAnim[0] = float64(a.chosenRegion.X + a.chosenRegion.W/2)
+					a.startRegionAnim[1] = float64(a.chosenRegion.Y + a.chosenRegion.H/2)
+					a.startRegionAnim[2] = float64(a.chosenRegion.X + a.chosenRegion.W/2)
+					a.startRegionAnim[3] = float64(a.chosenRegion.Y + a.chosenRegion.H/2)
+				}
 			}
+
+			if isRegionSet(a.chosenRegion) {
+				a.endRegionAnim[0] = float64(a.chosenRegion.X)
+				a.endRegionAnim[1] = float64(a.chosenRegion.Y)
+				a.endRegionAnim[2] = float64(a.chosenRegion.X + a.chosenRegion.W)
+				a.endRegionAnim[3] = float64(a.chosenRegion.Y + a.chosenRegion.H)
+			} else {
+				a.endRegionAnim[0] = float64(prevRegion.X + prevRegion.W/2)
+				a.endRegionAnim[1] = float64(prevRegion.Y + prevRegion.H/2)
+				a.endRegionAnim[2] = float64(prevRegion.X + prevRegion.W/2)
+				a.endRegionAnim[3] = float64(prevRegion.Y + prevRegion.H/2)
+			}
+
+			a.regionAnim = 0.0
 
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
