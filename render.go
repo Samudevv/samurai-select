@@ -48,7 +48,7 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 	)
 	c.Paint()
 
-	if (a.state == StateNone || !isRegionAnimSet(a.chosenRegionAnim)) && !flags.Debug {
+	if (a.state == StateNone || (a.state == StateChooseRegion && !isRegionAnimSet(a.chosenRegionAnim))) && !flags.Debug {
 		return
 	}
 
