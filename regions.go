@@ -27,6 +27,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"os"
 	"os/exec"
@@ -37,6 +38,30 @@ import (
 
 type Regions interface {
 	OutputRegions() []samure.Rect
+}
+
+func DetectRegions() Regions {
+	var stdout strings.Builder
+	ps := exec.Command("ps", "-e")
+	ps.Stderr = os.Stderr
+	ps.Stdout = &stdout
+
+	if err := ps.Run(); err != nil {
+		return nil
+	}
+
+	scanner := bufio.NewScanner(strings.NewReader(stdout.String()))
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasSuffix(line, "Hyprland") {
+			return &HyprlandRegions{}
+		} /*else if strings.HasSuffix(line, "sway") {
+			// TODO: sway support
+		}*/
+	}
+
+	return nil
 }
 
 type HyprlandRegions struct {

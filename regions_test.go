@@ -29,10 +29,12 @@ package main
 import "testing"
 
 func TestHyprlandRegions(t *testing.T) {
-	var hypr HyprlandRegions
+	regions := DetectRegions()
 
-	regions := hypr.OutputRegions()
+	if regions == nil {
+		t.Fatal("Could not detect what compositor is running")
+	}
 
-	t.Log(regions)
+	t.Log(regions.OutputRegions())
 	t.Fail()
 }

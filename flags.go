@@ -63,7 +63,7 @@ var flags struct {
 	GrabberRadius    float64 `long:"grabber-radius" description:"The radius of the grabbers for altering the selection" default:"7"`
 	Debug            bool    `short:"d" long:"debug" description:"Show developer debug stuff"`
 	NoAnimation      bool    `long:"no-anim" description:"Disable the bouncing animation of the grabbers if alter selection is enabled"`
-	Regions          string  `short:"r" long:"regions" description:"Choose from predefined regions (e.g. windows) on the screen." optional-value:"auto" default:"none" choice:"none" choice:"auto" choice:"hyprland"`
+	Regions          string  `short:"r" long:"regions" description:"Choose from predefined regions (e.g. windows) on the screen." optional:"1" optional-value:"auto" default:"none" choice:"none" choice:"auto" choice:"hyprland"`
 }
 
 func CreateApp(argv []string) (*App, error) {
@@ -154,7 +154,10 @@ func CreateApp(argv []string) (*App, error) {
 	switch flags.Regions {
 	case "none":
 	case "auto":
-		fmt.Fprintf(os.Stderr, "Auto regions are not implemented yet\n")
+		a.regionsObj = DetectRegions()
+		if a.regionsObj == nil {
+			fmt.Fprintf(os.Stderr, "Could not detect which compositor is running\n")
+		}
 	case "hyprland":
 		a.regionsObj = &HyprlandRegions{}
 	default:
