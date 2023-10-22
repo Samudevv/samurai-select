@@ -59,9 +59,9 @@ func DetectRegions() Regions {
 		line := scanner.Text()
 		if strings.HasSuffix(line, "Hyprland") {
 			return &HyprlandRegions{}
-		} /*else if strings.HasSuffix(line, "sway") {
-			// TODO: sway support
-		}*/
+		} else if strings.HasSuffix(line, "sway") {
+			return &SwayRegions{}
+		}
 	}
 
 	return nil
@@ -181,4 +181,109 @@ func (*HyprlandRegions) CursorPos() (int, int, error) {
 	}
 
 	return int(x), int(y), nil
+}
+
+type SwayRegions struct {
+}
+
+type SwayRect struct {
+	X      int
+	Y      int
+	Width  int
+	Height int
+}
+
+type SwayOutput struct {
+	CurrentWorkspace string `json:"current_workspace"`
+}
+
+type SwayNode struct {
+	Type          string
+	Name          string
+	Rect          SwayRect
+	WindowRect    SwayRect `json:"window_rect"`
+	Nodes         []SwayNode
+	FloatingNodes []SwayNode `json:"floating_nodes"`
+}
+
+func (*SwayRegions) OutputRegions() (rs []samure.Rect) {
+	swaymsgPath, err := exec.LookPath("swaymsg")
+	if err != nil {
+		return
+	}
+
+	var stdout strings.Builder
+	swaymsg := exec.Command(swaymsgPath, "--raw", "-t", "get_outputs")
+	swaymsg.Stdout = &stdout
+	swaymsg.Stderr = os.Stderr
+
+	if err = swaymsg.Run(); err != nil {
+		return
+	}
+
+	var outputs []SwayOutput
+	decoder := json.NewDecoder(strings.NewReader(stdout.String()))
+	if err = decoder.Decode(&outputs); err != nil {
+		return
+	}
+
+	var currentWorkspaces []string
+	for _, o := range outputs {
+		currentWorkspaces = append(currentWorkspaces, o.CurrentWorkspace)
+	}
+
+	stdout.Reset()
+	swaymsg = exec.Command(swaymsgPath, "--raw", "-t", "get_tree")
+	swaymsg.Stdout = &stdout
+	swaymsg.Stderr = os.Stderr
+
+	if err = swaymsg.Run(); err != nil {
+		return
+	}
+
+	decoder = json.NewDecoder(strings.NewReader(stdout.String()))
+	var tree SwayNode
+	if err = decoder.Decode(&tree); err != nil {
+		return
+	}
+
+	swayTreeAddRegions(&rs, tree, currentWorkspaces)
+
+	return
+}
+
+func (*SwayRegions) CursorPos() (int, int, error) {
+	return 0, 0, errors.New("not implemented")
+}
+
+func swayTreeAddRegions(rs *[]samure.Rect, n SwayNode, currentWorkspaces []string) {
+	if n.Type == "con" || n.Type == "floating_con" {
+		*rs = append(*rs, samure.Rect{
+			X: n.Rect.X,
+			Y: n.Rect.Y,
+			W: n.Rect.Width,
+			H: n.Rect.Height,
+		})
+	} else {
+		if n.Type == "workspace" {
+			var isIn bool
+			for _, c := range currentWorkspaces {
+				if c == n.Name {
+					isIn = true
+					break
+				}
+			}
+
+			if !isIn {
+				return
+			}
+		}
+
+		for _, child := range n.FloatingNodes {
+			swayTreeAddRegions(rs, child, currentWorkspaces)
+		}
+		for _, child := range n.Nodes {
+			swayTreeAddRegions(rs, child, currentWorkspaces)
+		}
+	}
 }

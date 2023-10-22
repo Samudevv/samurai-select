@@ -28,7 +28,7 @@ package main
 
 import "testing"
 
-func TestHyprlandRegions(t *testing.T) {
+func TestRegions(t *testing.T) {
 	regions := DetectRegions()
 
 	if regions == nil {
