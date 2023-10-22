@@ -222,6 +222,7 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 		for i := range a.regions {
 			if a.regions[i].PointInOutput(int(px), int(py)) {
 				a.chosenRegion = a.regions[i]
+				break
 			}
 		}
 
