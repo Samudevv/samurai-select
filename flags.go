@@ -64,7 +64,8 @@ var flags struct {
 	GrabberRadius    float64 `long:"grabber-radius" description:"The radius of the grabbers for altering the selection" default:"7"`
 	Debug            bool    `short:"d" long:"debug" description:"Show developer debug stuff"`
 	NoAnimation      bool    `long:"no-anim" description:"Disable the bouncing animation of the grabbers if alter selection is enabled"`
-	Regions          string  `short:"r" long:"regions" description:"Choose from predefined regions (e.g. windows) on the screen." optional:"1" optional-value:"auto" default:"none" choice:"none" choice:"auto" choice:"hyprland"`
+	Regions          string  `short:"r" long:"regions" description:"Choose from predefined regions (e.g. windows) on the screen." default:"none" choice:"none" choice:"auto" choice:"hyprland" choice:"sway" choice:"arg"`
+	RegionsArgument  string  `short:"R" long:"regions-arg" description:"Declare a list of regions when using regions mode arg. Format 'X1,Y1 W1xH1 X2,Y2 W2xH2 ...'"`
 	Outputs          bool    `short:"p" long:"outputs" descriptions:"Choose an output"`
 }
 
@@ -162,6 +163,14 @@ func CreateApp(argv []string) (*App, error) {
 		}
 	case "hyprland":
 		a.regionsObj = &HyprlandRegions{}
+	case "sway":
+		a.regionsObj = &SwayRegions{}
+	case "arg":
+		if len(flags.RegionsArgument) == 0 {
+			fmt.Fprintln(os.Stderr, "regions has been set to \"arg\" but regions-arg is empty")
+		} else {
+			a.regionsObj = &ArgumentRegions{}
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Invalid regions: \"%s\"\n", flags.Regions)
 	}

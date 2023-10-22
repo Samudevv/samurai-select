@@ -287,3 +287,78 @@ func swayTreeAddRegions(rs *[]samure.Rect, n SwayNode, currentWorkspaces []strin
 		}
 	}
 }
+
+type ArgumentRegions struct {
+	regions []samure.Rect
+}
+
+func (a *ArgumentRegions) OutputRegions() []samure.Rect {
+	if len(a.regions) != 0 {
+		return a.regions
+	}
+
+	var r samure.Rect
+	var this string
+	other := flags.RegionsArgument
+
+	for len(other) != 0 {
+		words := strings.SplitN(other, ",", 2)
+		if len(words) != 2 {
+			return a.regions
+		}
+		this, other = strings.TrimSpace(words[0]), strings.TrimSpace(words[1])
+
+		x, err := strconv.ParseInt(this, 10, 64)
+		if err != nil {
+			return a.regions
+		}
+		r.X = int(x)
+
+		words = strings.SplitN(other, " ", 2)
+		if len(words) != 2 {
+			return a.regions
+		}
+		this, other = strings.TrimSpace(words[0]), strings.TrimSpace(words[1])
+
+		y, err := strconv.ParseInt(this, 10, 64)
+		if err != nil {
+			return a.regions
+		}
+		r.Y = int(y)
+
+		words = strings.SplitN(other, "x", 2)
+		if len(words) != 2 {
+			return a.regions
+		}
+		this, other = strings.TrimSpace(words[0]), strings.TrimSpace(words[1])
+
+		w, err := strconv.ParseUint(this, 10, 64)
+		if err != nil {
+			return a.regions
+		}
+		r.W = int(w)
+
+		words = strings.SplitN(other, " ", 2)
+		this = strings.TrimSpace(words[0])
+
+		h, err := strconv.ParseUint(this, 10, 64)
+		if err != nil {
+			return a.regions
+		}
+		r.H = int(h)
+
+		a.regions = append(a.regions, r)
+
+		if len(words) == 2 {
+			other = strings.TrimSpace(words[1])
+		} else {
+			return a.regions
+		}
+	}
+
+	return a.regions
+}
+
+func (*ArgumentRegions) CursorPos() (int, int, error) {
+	return 0, 0, errors.New("not implemented")
+}
