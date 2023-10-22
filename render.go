@@ -178,11 +178,11 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 		}
 
 		// Only render text if it's inside the output
-		if o.RectInOutput(int(widthTextPos[0])+o.X, int(widthTextPos[1])+o.Y, int(widthExt.Width), int(widthExt.Height)) {
+		if o.RectInOutput(int(widthTextPos[0])+o.X, int(widthTextPos[1])+o.Y-int(widthExt.Height), int(widthExt.Width), int(widthExt.Height)) {
 			c.MoveTo(widthTextPos[0], widthTextPos[1])
 			c.ShowText(widthStr)
 		}
-		if o.RectInOutput(int(heightTextPos[0])+o.X, int(heightTextPos[1])+o.Y, int(heightExt.Width), int(heightExt.Height)) {
+		if o.RectInOutput(int(heightTextPos[0])+o.X, int(heightTextPos[1])+o.Y-int(heightExt.Height), int(heightExt.Width), int(heightExt.Height)) {
 			c.MoveTo(heightTextPos[0], heightTextPos[1])
 			c.ShowText(heightStr)
 		}
