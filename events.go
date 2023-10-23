@@ -286,7 +286,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 			case samure.StateReleased:
 				a.pointerUp(ctx)
 			}
-			e.Seat.SetPointerShape(a.getCursorShape())
+			ctx.SetPointerShape(a.getCursorShape())
 		}
 	case samure.EventTouchDown:
 		if a.touchID != nil && *a.touchID != e.TouchID {
@@ -314,7 +314,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		dy := py - a.pointer[1]
 		a.pointer[0], a.pointer[1] = px, py
 
-		e.Seat.SetPointerShape(a.getCursorShape())
+		ctx.SetPointerShape(a.getCursorShape())
 
 		a.pointerMove(ctx, px, py, dx, dy)
 	case samure.EventTouchMotion:
@@ -331,7 +331,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 	case samure.EventPointerEnter:
 		switch a.state {
 		case StateNone:
-			e.Seat.SetPointerShape(samure.CursorShapeCrosshair)
+			ctx.SetPointerShape(samure.CursorShapeCrosshair)
 		}
 	case samure.EventKeyboardKey:
 		if e.Key == samure.KeyEsc && e.State == samure.StateReleased {

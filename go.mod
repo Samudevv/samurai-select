@@ -3,7 +3,7 @@ module github.com/PucklaJ/samurai-select
 go 1.21.1
 
 require (
-	github.com/PucklaJ/samurai-render-go v0.1.1
+	github.com/PucklaJ/samurai-render-go v0.1.3
 	github.com/gotk3/gotk3 v0.6.2
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/mazznoer/csscolorparser v0.1.3

@@ -49,6 +49,7 @@ func run() int {
 	cfg := samure.CreateContextConfig(a)
 	cfg.PointerInteraction = true
 	cfg.KeyboardInteraction = true
+	cfg.MaxFPS = 120 // TODO: make relative to output refresh rate
 
 	ctx, err := samure.CreateContextWithBackend(cfg, b)
 	if err != nil {
