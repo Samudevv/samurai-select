@@ -131,7 +131,7 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 
 	a.renderGrabbers(c, o)
 
-	if flags.Text {
+	if flags.Text && w >= 1.0 && h >= 1.0 {
 		x := o.RelX(xGlobal)
 		y := o.RelY(yGlobal)
 
