@@ -97,9 +97,8 @@ func (a *App) pointerDown(ctx samure.Context, px, py float64) {
 			}
 		}
 	case StateChooseRegion:
-		if isRegionSet(a.chosenRegion) {
-			ctx.SetRunning(false)
-		}
+		a.cancelled = !isRegionSet(a.chosenRegion)
+		ctx.SetRunning(false)
 	case StateChooseOutput:
 		ctx.SetRunning(a.chosenOutput.Handle == nil)
 	}
