@@ -135,10 +135,10 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 		x := o.RelX(xGlobal)
 		y := o.RelY(yGlobal)
 
-		widthStr := fmt.Sprintf("%.0f", w)
-		heightStr := fmt.Sprintf("%.0f", h)
-		xStr := fmt.Sprintf("X: %.0f", xGlobal)
-		yStr := fmt.Sprintf("Y: %.0f", yGlobal)
+		widthStr := fmt.Sprintf("%d", int(w))
+		heightStr := fmt.Sprintf("%d", int(h))
+		xStr := fmt.Sprintf("X: %d", int(xGlobal))
+		yStr := fmt.Sprintf("Y: %d", int(yGlobal))
 
 		c.SelectFontFace(flags.Font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 		c.SetFontSize(flags.FontSize)
