@@ -101,7 +101,7 @@ func (a *App) pointerDown(ctx samure.Context, px, py float64) {
 			ctx.SetRunning(false)
 		}
 	case StateChooseOutput:
-		ctx.SetRunning(false)
+		ctx.SetRunning(a.chosenOutput.Handle == nil)
 	}
 }
 
