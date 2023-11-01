@@ -71,6 +71,9 @@ var flags struct {
 
 func CreateApp(argv []string) (*App, error) {
 	parser := flag.NewParser(&flags, flag.HelpFlag)
+
+	argv = preprocessArguments(argv)
+
 	_, err := parser.ParseArgs(argv)
 	if err != nil {
 		if !flag.WroteHelp(err) {
@@ -225,4 +228,40 @@ func parseColor(colorString string) [4]float64 {
 		c.B,
 		c.A,
 	}
+}
+
+func preprocessArguments(argv []string) []string {
+	// Add 'auto' after the -r or --regions flag if no value has been specified
+	for i := 0; i < len(argv); i++ {
+		var isRegions bool
+		if strings.HasPrefix(argv[i], "--") {
+			if strings.TrimPrefix(argv[i], "--") == "regions" {
+				isRegions = true
+			}
+		} else if strings.HasPrefix(argv[i], "-") {
+			if strings.HasSuffix(argv[i], "r") {
+				isRegions = true
+			}
+		}
+
+		if isRegions {
+			if len(argv) == i+1 {
+				argv = append(argv, "auto")
+				i++
+			} else if strings.HasPrefix(argv[i+1], "-") {
+				before := argv[:i+1]
+				after := copyArgv(argv[i+1:])
+				argv = append(append(before, "auto"), after...)
+				i++
+			}
+		}
+	}
+
+	return argv
+}
+
+func copyArgv(argv []string) []string {
+	rs := make([]string, len(argv))
+	copy(rs, argv)
+	return rs
 }
