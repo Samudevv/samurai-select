@@ -137,12 +137,10 @@ func run() int {
 	}
 
 	if flags.Screenshot {
-		now := time.Now()
-		var screenshotFileName string
-		if strings.Contains(flags.ScreenshotOutput, "%") {
-			screenshotFileName = fmt.Sprintf(flags.ScreenshotOutput, now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
-		} else {
-			screenshotFileName = flags.ScreenshotOutput
+		screenshotFileName, err := createScreenshotFilename(time.Now())
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Screenshot format:", err)
+			return 1
 		}
 
 		var screenshotFlags []string

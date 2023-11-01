@@ -32,6 +32,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 
 	samure "github.com/PucklaJ/samurai-render-go"
 )
@@ -242,4 +243,45 @@ func unsetRegion(r *samure.Rect) {
 	r.Y = 0
 	r.W = 0
 	r.H = 0
+}
+
+func createScreenshotFilename(t time.Time) (string, error) {
+	var out strings.Builder
+	var parseSpecifier bool
+	for _, r := range flags.ScreenshotOutput {
+		if parseSpecifier {
+			switch r {
+			case 'n':
+				out.WriteString(strconv.Itoa(t.Nanosecond()))
+			case 's':
+				out.WriteString(fmt.Sprintf("%02d", t.Second()))
+			case 'm':
+				out.WriteString(fmt.Sprintf("%02d", t.Minute()))
+			case 'h':
+				out.WriteString(fmt.Sprintf("%02d", t.Hour()))
+			case 'd':
+				out.WriteString(fmt.Sprintf("%02d", t.Day()))
+			case 'M':
+				out.WriteString(fmt.Sprintf("%02d", t.Month()))
+			case 'o':
+				out.WriteString(t.Month().String())
+			case 'y':
+				out.WriteString(strconv.Itoa(t.Year()))
+			case '%':
+				out.WriteRune(r)
+			default:
+				return "", fmt.Errorf("invalid format specifier: \"%s\"", string(r))
+			}
+			parseSpecifier = false
+		} else {
+			switch r {
+			case '%':
+				parseSpecifier = true
+			default:
+				out.WriteRune(r)
+			}
+		}
+	}
+
+	return out.String(), nil
 }

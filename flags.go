@@ -55,7 +55,7 @@ var flags struct {
 	TextPadding      float64 `long:"text-padding" description:"The distance between the selection box and each text" default:"10"`
 	FreezeScreen     bool    `short:"z" long:"freeze" description:"Freeze the screen while performing the selection"`
 	Screenshot       bool    `short:"s" long:"screenshot" description:"Use grim to perform a screenshot"`
-	ScreenshotOutput string  `short:"o" long:"output" description:"File path where the screenshot will be stored. You can Use Explicit argument indexes (https://pkg.go.dev/fmt) where 1 is year, 2 is month, 3 is day 4 is hour 5 is minute and 6 is second" default:"screenshot-%[1]d.%02[2]d.%02[3]d-%02[4]d:%02[5]d:%02[6]d.png"`
+	ScreenshotOutput string  `short:"o" long:"output" description:"File path where the screenshot will be stored. See at the man page for the specifiers that can be used" default:"screenshot-%y.%M.%d-%h:%m:%s.png"`
 	ScreenshotFlags  string  `long:"screenshot-flags" description:"These flags are passed to grim when performing the screenshot"`
 	Command          string  `short:"c" long:"cmd" description:"Clear the screen and execute a command. This is useful to perform an action while the screen is frozen. Insert %geometry% where you want to put the resulting geometry."`
 	Format           string  `short:"f" long:"format" description:"Set the format in which the geometry is output. See at the man page for the specifiers that can be used" default:"%x,%y %wx%h"`
