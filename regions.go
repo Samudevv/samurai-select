@@ -83,6 +83,7 @@ type HyprClient struct {
 	At        [2]int
 	Size      [2]int
 	Workspace HyprWorkspace
+	Floating  bool
 }
 
 func (h HyprClient) IsOnScreen(monitors []HyprMonitor) bool {
@@ -134,16 +135,26 @@ func (*HyprlandRegions) OutputRegions() (rs []samure.Rect) {
 		return
 	}
 
+	var floatingClients []samure.Rect
+
 	for _, c := range clients {
 		if c.IsOnScreen(monitors) {
-			rs = append(rs, samure.Rect{
+			r := samure.Rect{
 				X: c.At[0],
 				Y: c.At[1],
 				W: c.Size[0],
 				H: c.Size[1],
-			})
+			}
+
+			if c.Floating {
+				floatingClients = append(floatingClients, r)
+			}
+
+			rs = append(rs, r)
 		}
 	}
+
+	rs = append(floatingClients, rs...)
 
 	return
 }
