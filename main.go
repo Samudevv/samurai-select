@@ -49,7 +49,6 @@ func run() int {
 	cfg := samure.CreateContextConfig(a)
 	cfg.PointerInteraction = true
 	cfg.KeyboardInteraction = true
-	cfg.MaxFPS = 120 // TODO: make relative to output refresh rate
 
 	ctx, err := samure.CreateContextWithBackend(cfg, b)
 	if err != nil {
@@ -115,7 +114,7 @@ func run() int {
 	if flags.Screenshot || flags.Command != "" {
 		a.clearScreen = true
 		for i := 0; i < ctx.LenOutputs(); i++ {
-			ctx.RenderOutput(ctx.Output(i), 0.0)
+			ctx.RenderOutput(ctx.Output(i))
 		}
 		ctx.Flush()
 	}

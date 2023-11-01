@@ -35,7 +35,7 @@ import (
 	"github.com/gotk3/gotk3/cairo"
 )
 
-func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o samure.Rect, deltaTime float64) {
+func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o samure.Rect) {
 	c := samure_cairo.Get(layerSurface)
 	c.SetOperator(cairo.OPERATOR_SOURCE)
 
