@@ -69,7 +69,7 @@ func run() int {
 				a.pointer[1] = float64(y)
 				for i := 0; i < ctx.LenOutputs(); i++ {
 					if ctx.Output(i).PointInOutput(int(a.pointer[0]), int(a.pointer[1])) {
-						a.chosenOutput = ctx.Output(i)
+						a.selectedOutput = ctx.Output(i)
 					}
 				}
 			}
@@ -108,7 +108,12 @@ func run() int {
 		return 1
 	}
 
-	geometry := fmt.Sprintf(flags.Format, sel.X, sel.Y, sel.W, sel.H)
+	outputName := "nil"
+	if a.selectedOutput.Handle != nil {
+		outputName = a.selectedOutput.Name()
+	}
+
+	geometry := fmt.Sprintf(flags.Format, sel.X, sel.Y, sel.W, sel.H, outputName)
 	fmt.Println(geometry)
 
 	if flags.Screenshot || flags.Command != "" {

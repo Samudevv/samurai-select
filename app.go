@@ -54,11 +54,12 @@ const (
 )
 
 type App struct {
-	start   [2]float64 // The top left corner of the selection box
-	end     [2]float64 // The bottom right corner of the selection box
-	pointer [2]float64 // The raw position of the pointer in global coordinates
-	anchor  [2]float64 // The position where the pointer has been released
-	offset  [2]float64
+	start          [2]float64 // The top left corner of the selection box
+	end            [2]float64 // The bottom right corner of the selection box
+	pointer        [2]float64 // The raw position of the pointer in global coordinates
+	anchor         [2]float64 // The position where the pointer has been released
+	offset         [2]float64
+	selectedOutput samure.Output
 
 	state       int
 	clearScreen bool
@@ -75,8 +76,6 @@ type App struct {
 	currentRegionAnim [4]float64
 	startRegionAnim   [4]float64
 	endRegionAnim     [4]float64
-
-	chosenOutput samure.Output
 
 	backgroundColor    [4]float64
 	selectionColor     [4]float64
@@ -99,7 +98,7 @@ func (a App) GetSelection() (samure.Rect, error) {
 	case StateChooseRegion:
 		return a.chosenRegion, nil
 	case StateChooseOutput:
-		return a.chosenOutput.Geo(), nil
+		return a.selectedOutput.Geo(), nil
 	default:
 		return samure.Rect{
 			X: int(a.start[0]),
@@ -140,7 +139,7 @@ func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {
 
 		if !flags.FreezeScreen && a.regionsObj != nil {
 			a.regions = a.regionsObj.OutputRegions()
-			a.pointerMove(ctx, a.pointer[0], a.pointer[1], 0.0, 0.0)
+			a.pointerMove(ctx, a.pointer[0], a.pointer[1], 0.0, 0.0, a.selectedOutput)
 		}
 	}
 }

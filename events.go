@@ -32,9 +32,10 @@ import (
 	samure "github.com/PucklaJ/samurai-render-go"
 )
 
-func (a *App) pointerDown(ctx samure.Context, px, py float64) {
+func (a *App) pointerDown(ctx samure.Context, px, py float64, focus samure.Output) {
 	switch a.state {
 	case StateNone:
+		a.selectedOutput = focus
 		a.anchor[0], a.anchor[1] = px, py
 		a.computeStartEnd(px, py, px, py)
 
@@ -89,9 +90,11 @@ func (a *App) pointerDown(ctx samure.Context, px, py float64) {
 			if sel.PointInOutput(int(px), int(py)) {
 				a.state = StateDragMiddle
 			} else {
+				a.selectedOutput = focus
 				a.grabberAnim = 0.0
 				a.anchor[0], a.anchor[1] = px, py
 				a.computeStartEnd(px, py, px, py)
+
 				a.state = StateDragNormal
 				ctx.SetRenderState(samure.RenderStateOnce)
 			}
@@ -100,7 +103,7 @@ func (a *App) pointerDown(ctx samure.Context, px, py float64) {
 		a.cancelled = !isRegionSet(a.chosenRegion)
 		ctx.SetRunning(false)
 	case StateChooseOutput:
-		ctx.SetRunning(a.chosenOutput.Handle == nil)
+		ctx.SetRunning(a.selectedOutput.Handle == nil)
 	}
 }
 
@@ -134,7 +137,7 @@ func (a *App) pointerUp(ctx samure.Context) {
 	}
 }
 
-func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
+func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64, focus samure.Output) {
 	pox := px + a.offset[0]
 	poy := py + a.offset[1]
 	x := a.start[0]
@@ -155,6 +158,7 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 		a.start[1] = y
 		a.end[0] = x + w
 		a.end[1] = y + h
+		a.selectedOutput = focus
 		a.handleOverlapAndAspectRatio()
 		ctx.SetRenderState(samure.RenderStateOnce)
 	case StateDragTop:
@@ -162,6 +166,7 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 		y = poy
 		a.start[1] = y
 		a.end[1] = y + h
+		a.selectedOutput = focus
 		a.handleOverlapAndAspectRatio()
 		ctx.SetRenderState(samure.RenderStateOnce)
 	case StateDragTopRight:
@@ -171,11 +176,13 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 		a.start[1] = y
 		a.end[0] = x + w
 		a.end[1] = y + h
+		a.selectedOutput = focus
 		a.handleOverlapAndAspectRatio()
 		ctx.SetRenderState(samure.RenderStateOnce)
 	case StateDragRight:
 		w = pox - x
 		a.end[0] = x + w
+		a.selectedOutput = focus
 		a.handleOverlapAndAspectRatio()
 		ctx.SetRenderState(samure.RenderStateOnce)
 	case StateDragBottomRight:
@@ -183,11 +190,13 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 		h = poy - y
 		a.end[0] = x + w
 		a.end[1] = y + h
+		a.selectedOutput = focus
 		a.handleOverlapAndAspectRatio()
 		ctx.SetRenderState(samure.RenderStateOnce)
 	case StateDragBottom:
 		h = poy - y
 		a.end[1] = y + h
+		a.selectedOutput = focus
 		a.handleOverlapAndAspectRatio()
 		ctx.SetRenderState(samure.RenderStateOnce)
 	case StateDragBottomLeft:
@@ -197,6 +206,7 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 		a.start[0] = x
 		a.end[0] = x + w
 		a.end[1] = y + h
+		a.selectedOutput = focus
 		a.handleOverlapAndAspectRatio()
 		ctx.SetRenderState(samure.RenderStateOnce)
 	case StateDragLeft:
@@ -204,6 +214,7 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 		x = pox
 		a.start[0] = x
 		a.end[0] = x + w
+		a.selectedOutput = focus
 		a.handleOverlapAndAspectRatio()
 		ctx.SetRenderState(samure.RenderStateOnce)
 	case StateDragMiddle:
@@ -213,8 +224,10 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 		a.start[1] = y
 		a.end[0] = x + w
 		a.end[1] = y + h
+		a.selectedOutput = focus
 		ctx.SetRenderState(samure.RenderStateOnce)
 	case StateChooseRegion:
+		a.selectedOutput = focus
 		prevRegion := a.chosenRegion
 		unsetRegion(&a.chosenRegion)
 
@@ -259,17 +272,17 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64) {
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
 	case StateChooseOutput:
-		prevOutput := a.chosenOutput
-		a.chosenOutput = samure.Output{Handle: nil}
+		prevOutput := a.selectedOutput
+		a.selectedOutput = samure.Output{Handle: nil}
 
 		for i := 0; i < ctx.LenOutputs(); i++ {
 			if ctx.Output(i).PointInOutput(int(px), int(py)) {
-				a.chosenOutput = ctx.Output(i)
+				a.selectedOutput = ctx.Output(i)
 				break
 			}
 		}
 
-		if a.chosenOutput != prevOutput {
+		if a.selectedOutput != prevOutput {
 			ctx.SetRenderState(samure.RenderStateOnce)
 		}
 	}
@@ -281,7 +294,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		if e.Button == samure.ButtonLeft {
 			switch e.State {
 			case samure.StatePressed:
-				a.pointerDown(ctx, a.pointer[0], a.pointer[1])
+				a.pointerDown(ctx, a.pointer[0], a.pointer[1], e.Seat.PointerFocus().Output())
 			case samure.StateReleased:
 				a.pointerUp(ctx)
 			}
@@ -298,7 +311,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 
 		a.pointer[0] = e.X + float64(e.Output.Geo().X)
 		a.pointer[1] = e.Y + float64(e.Output.Geo().Y)
-		a.pointerDown(ctx, a.pointer[0], a.pointer[1])
+		a.pointerDown(ctx, a.pointer[0], a.pointer[1], e.Output)
 	case samure.EventTouchUp:
 		if a.touchID == nil || *a.touchID != e.TouchID {
 			break
@@ -315,7 +328,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 
 		ctx.SetPointerShape(a.getCursorShape())
 
-		a.pointerMove(ctx, px, py, dx, dy)
+		a.pointerMove(ctx, px, py, dx, dy, e.Seat.PointerFocus().Output())
 	case samure.EventTouchMotion:
 		if a.touchID == nil || *a.touchID != e.TouchID {
 			break
@@ -326,7 +339,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		dx := px - a.pointer[0]
 		dy := py - a.pointer[1]
 		a.pointer[0], a.pointer[1] = px, py
-		a.pointerMove(ctx, px, py, dx, dy)
+		a.pointerMove(ctx, px, py, dx, dy, e.Seat.TouchFocus().Output())
 	case samure.EventPointerEnter:
 		switch a.state {
 		case StateNone:

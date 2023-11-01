@@ -40,7 +40,7 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 	c.SetOperator(cairo.OPERATOR_SOURCE)
 
 	if a.state == StateChooseOutput {
-		if a.chosenOutput.Handle != nil && a.chosenOutput.Geo() == o {
+		if a.selectedOutput.Handle != nil && a.selectedOutput.Geo() == o {
 			if a.clearScreen {
 				c.SetSourceRGBA(0.0, 0.0, 0.0, 0.0)
 			} else {
