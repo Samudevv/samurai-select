@@ -1,6 +1,6 @@
 # Samurai Select
 
-A screen selection tool for wlroots based wayland compositors. I thank [slurp](https://github.com/emersion/slurp) for teaching me how to use the layer shell and for showing an approach to creating a screen selection tool.
+A screen selection tool for wayland compositors using the layer shell. I thank [slurp](https://github.com/emersion/slurp) for teaching me how to use the layer shell and for showing an approach to creating a screen selection tool.
 
 ## Features
 
