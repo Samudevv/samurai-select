@@ -57,8 +57,18 @@ func run() int {
 	}
 	defer ctx.Destroy()
 
-	if isRegionSet(a.chosenRegion) {
+	if isRegionSet(a.selectedRegion.Geo) {
 		ctx.SetPointerShape(samure.CursorShapePointer)
+		for i := 0; i < ctx.LenOutputs(); i++ {
+			if ctx.Output(i).RectInOutput(
+				a.selectedRegion.Geo.X,
+				a.selectedRegion.Geo.Y,
+				a.selectedRegion.Geo.W,
+				a.selectedRegion.Geo.H,
+			) {
+				a.selectedOutput = ctx.Output(i)
+			}
+		}
 	}
 
 	if a.state == StateChooseOutput {
@@ -102,6 +112,7 @@ func run() int {
 	ctx.SetRenderState(samure.RenderStateOnce)
 	ctx.Run()
 
+	// Retrieve data that will be output using the format
 	sel, err := a.GetSelection()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -113,8 +124,13 @@ func run() int {
 		outputName = a.selectedOutput.Name()
 	}
 
-	geometry := fmt.Sprintf(flags.Format, sel.X, sel.Y, sel.W, sel.H, outputName)
-	fmt.Println(geometry)
+	regionName := "nil"
+	if isRegionSet(a.selectedRegion.Geo) {
+		regionName = a.selectedRegion.Name
+	}
+
+	fmt.Printf(flags.Format+"\n", sel.X, sel.Y, sel.W, sel.H, outputName, regionName)
+	geometry := fmt.Sprintf("%d,%d %dx%d", sel.X, sel.Y, sel.W, sel.H)
 
 	if flags.Screenshot || flags.Command != "" {
 		a.clearScreen = true

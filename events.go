@@ -100,7 +100,7 @@ func (a *App) pointerDown(ctx samure.Context, px, py float64, focus samure.Outpu
 			}
 		}
 	case StateChooseRegion:
-		a.cancelled = !isRegionSet(a.chosenRegion)
+		a.cancelled = !isRegionSet(a.selectedRegion.Geo)
 		ctx.SetRunning(false)
 	case StateChooseOutput:
 		ctx.SetRunning(a.selectedOutput.Handle == nil)
@@ -228,43 +228,43 @@ func (a *App) pointerMove(ctx samure.Context, px, py, dx, dy float64, focus samu
 		ctx.SetRenderState(samure.RenderStateOnce)
 	case StateChooseRegion:
 		a.selectedOutput = focus
-		prevRegion := a.chosenRegion
-		unsetRegion(&a.chosenRegion)
+		prevRegion := a.selectedRegion
+		unsetRegion(&a.selectedRegion.Geo)
 
 		for i := range a.regions {
-			if a.regions[i].PointInOutput(int(px), int(py)) {
-				a.chosenRegion = a.regions[i]
+			if a.regions[i].Geo.PointInOutput(int(px), int(py)) {
+				a.selectedRegion = a.regions[i]
 				break
 			}
 		}
 
-		if a.chosenRegion != prevRegion {
+		if a.selectedRegion != prevRegion {
 			if a.regionAnim < 1.0 {
 				a.startRegionAnim = a.currentRegionAnim
 			} else {
-				if isRegionSet(prevRegion) {
-					a.startRegionAnim[0] = float64(prevRegion.X)
-					a.startRegionAnim[1] = float64(prevRegion.Y)
-					a.startRegionAnim[2] = float64(prevRegion.X + prevRegion.W)
-					a.startRegionAnim[3] = float64(prevRegion.Y + prevRegion.H)
+				if isRegionSet(prevRegion.Geo) {
+					a.startRegionAnim[0] = float64(prevRegion.Geo.X)
+					a.startRegionAnim[1] = float64(prevRegion.Geo.Y)
+					a.startRegionAnim[2] = float64(prevRegion.Geo.X + prevRegion.Geo.W)
+					a.startRegionAnim[3] = float64(prevRegion.Geo.Y + prevRegion.Geo.H)
 				} else {
-					a.startRegionAnim[0] = float64(a.chosenRegion.X + a.chosenRegion.W/2)
-					a.startRegionAnim[1] = float64(a.chosenRegion.Y + a.chosenRegion.H/2)
-					a.startRegionAnim[2] = float64(a.chosenRegion.X + a.chosenRegion.W/2)
-					a.startRegionAnim[3] = float64(a.chosenRegion.Y + a.chosenRegion.H/2)
+					a.startRegionAnim[0] = float64(a.selectedRegion.Geo.X + a.selectedRegion.Geo.W/2)
+					a.startRegionAnim[1] = float64(a.selectedRegion.Geo.Y + a.selectedRegion.Geo.H/2)
+					a.startRegionAnim[2] = float64(a.selectedRegion.Geo.X + a.selectedRegion.Geo.W/2)
+					a.startRegionAnim[3] = float64(a.selectedRegion.Geo.Y + a.selectedRegion.Geo.H/2)
 				}
 			}
 
-			if isRegionSet(a.chosenRegion) {
-				a.endRegionAnim[0] = float64(a.chosenRegion.X)
-				a.endRegionAnim[1] = float64(a.chosenRegion.Y)
-				a.endRegionAnim[2] = float64(a.chosenRegion.X + a.chosenRegion.W)
-				a.endRegionAnim[3] = float64(a.chosenRegion.Y + a.chosenRegion.H)
+			if isRegionSet(a.selectedRegion.Geo) {
+				a.endRegionAnim[0] = float64(a.selectedRegion.Geo.X)
+				a.endRegionAnim[1] = float64(a.selectedRegion.Geo.Y)
+				a.endRegionAnim[2] = float64(a.selectedRegion.Geo.X + a.selectedRegion.Geo.W)
+				a.endRegionAnim[3] = float64(a.selectedRegion.Geo.Y + a.selectedRegion.Geo.H)
 			} else {
-				a.endRegionAnim[0] = float64(prevRegion.X + prevRegion.W/2)
-				a.endRegionAnim[1] = float64(prevRegion.Y + prevRegion.H/2)
-				a.endRegionAnim[2] = float64(prevRegion.X + prevRegion.W/2)
-				a.endRegionAnim[3] = float64(prevRegion.Y + prevRegion.H/2)
+				a.endRegionAnim[0] = float64(prevRegion.Geo.X + prevRegion.Geo.W/2)
+				a.endRegionAnim[1] = float64(prevRegion.Geo.Y + prevRegion.Geo.H/2)
+				a.endRegionAnim[2] = float64(prevRegion.Geo.X + prevRegion.Geo.W/2)
+				a.endRegionAnim[3] = float64(prevRegion.Geo.Y + prevRegion.Geo.H/2)
 			}
 
 			a.regionAnim = 0.0
@@ -544,7 +544,7 @@ func (a *App) getCursorShape() int {
 	case StateDragLeft:
 		return samure.CursorShapeWResize
 	case StateChooseRegion:
-		if isRegionSet(a.chosenRegion) {
+		if isRegionSet(a.selectedRegion.Geo) {
 			return samure.CursorShapePointer
 		} else {
 			return samure.CursorShapeDefault

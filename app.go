@@ -71,7 +71,7 @@ type App struct {
 	grabberRadius      float64
 	grabberBorderWidth float64
 
-	chosenRegion      samure.Rect
+	selectedRegion    Region
 	regionAnim        float64
 	currentRegionAnim [4]float64
 	startRegionAnim   [4]float64
@@ -86,7 +86,7 @@ type App struct {
 	padding            float64
 	aspect             float64
 	regionsObj         Regions
-	regions            []samure.Rect
+	regions            []Region
 }
 
 func (a App) GetSelection() (samure.Rect, error) {
@@ -96,7 +96,7 @@ func (a App) GetSelection() (samure.Rect, error) {
 
 	switch a.state {
 	case StateChooseRegion:
-		return a.chosenRegion, nil
+		return a.selectedRegion.Geo, nil
 	case StateChooseOutput:
 		return a.selectedOutput.Geo(), nil
 	default:

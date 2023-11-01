@@ -58,7 +58,7 @@ var flags struct {
 	ScreenshotOutput string  `short:"o" long:"output" description:"File path where the screenshot will be stored. You can Use Explicit argument indexes (https://pkg.go.dev/fmt) where 1 is year, 2 is month, 3 is day 4 is hour 5 is minute and 6 is second" default:"screenshot-%[1]d.%02[2]d.%02[3]d-%02[4]d:%02[5]d:%02[6]d.png"`
 	ScreenshotFlags  string  `long:"screenshot-flags" description:"These flags are passed to grim when performing the screenshot"`
 	Command          string  `short:"c" long:"cmd" description:"Clear the screen and execute a command. This is useful to perform an action while the screen is frozen. Insert %geometry% where you want to put the resulting geometry."`
-	Format           string  `short:"f" long:"format" description:"Set the format in which the geometry is output. Use Explicit argument indexes (https://pkg.go.dev/fmt) where 1 is x, 2 is y, 3 is width, 4 is height and 5 is the name of the output" default:"%[1]d,%[2]d %[3]dx%[4]d"`
+	Format           string  `short:"f" long:"format" description:"Set the format in which the geometry is output. Use Explicit argument indexes (https://pkg.go.dev/fmt) where 1 is x, 2 is y, 3 is width, 4 is height, 5 is the name of the output and 6 is the name of the region" default:"%[1]d,%[2]d %[3]dx%[4]d"`
 	ForceAspectRatio string  `short:"a" long:"aspect-ratio" description:"Force an aspect ratio for the selection box in the format w:h"`
 	AlterSelection   bool    `short:"A" long:"alter-selection" description:"This flag lets you change the selection box after releasing left click by dragging the box at the edges and corners"`
 	GrabberRadius    float64 `long:"grabber-radius" description:"The radius of the grabbers for altering the selection" default:"7"`
@@ -71,7 +71,7 @@ var flags struct {
 
 func CreateApp(argv []string) (*App, error) {
 	parser := flag.NewParser(&flags, flag.HelpFlag)
-	argv, err := parser.ParseArgs(argv)
+	_, err := parser.ParseArgs(argv)
 	if err != nil {
 		if !flag.WroteHelp(err) {
 			fmt.Fprintf(os.Stderr, "Arguments: %v\n", err)
@@ -188,16 +188,17 @@ func CreateApp(argv []string) (*App, error) {
 			a.pointer[1] = float64(y)
 
 			for i := range a.regions {
-				if a.regions[i].PointInOutput(x, y) {
-					a.chosenRegion = a.regions[i]
+				if a.regions[i].Geo.PointInOutput(x, y) {
+					a.selectedRegion = a.regions[i]
+					break
 				}
 			}
 
-			if isRegionSet(a.chosenRegion) {
-				a.currentRegionAnim[0] = float64(a.chosenRegion.X)
-				a.currentRegionAnim[1] = float64(a.chosenRegion.Y)
-				a.currentRegionAnim[2] = float64(a.chosenRegion.X + a.chosenRegion.W)
-				a.currentRegionAnim[3] = float64(a.chosenRegion.Y + a.chosenRegion.H)
+			if isRegionSet(a.selectedRegion.Geo) {
+				a.currentRegionAnim[0] = float64(a.selectedRegion.Geo.X)
+				a.currentRegionAnim[1] = float64(a.selectedRegion.Geo.Y)
+				a.currentRegionAnim[2] = float64(a.selectedRegion.Geo.X + a.selectedRegion.Geo.W)
+				a.currentRegionAnim[3] = float64(a.selectedRegion.Geo.Y + a.selectedRegion.Geo.H)
 			}
 		}
 	}

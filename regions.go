@@ -38,8 +38,13 @@ import (
 	samure "github.com/PucklaJ/samurai-render-go"
 )
 
+type Region struct {
+	Geo  samure.Rect
+	Name string
+}
+
 type Regions interface {
-	OutputRegions() []samure.Rect
+	OutputRegions() []Region
 	CursorPos() (int, int, error)
 }
 
@@ -84,6 +89,7 @@ type HyprClient struct {
 	Size      [2]int
 	Workspace HyprWorkspace
 	Floating  bool
+	Title     string
 }
 
 func (h HyprClient) IsOnScreen(monitors []HyprMonitor) bool {
@@ -100,7 +106,7 @@ func (h HyprClient) IsOnScreen(monitors []HyprMonitor) bool {
 	return false
 }
 
-func (*HyprlandRegions) OutputRegions() (rs []samure.Rect) {
+func (*HyprlandRegions) OutputRegions() (rs []Region) {
 	hyprctlPath, err := exec.LookPath("hyprctl")
 	if err != nil {
 		return
@@ -135,22 +141,25 @@ func (*HyprlandRegions) OutputRegions() (rs []samure.Rect) {
 		return
 	}
 
-	var floatingClients []samure.Rect
+	var floatingClients []Region
 
 	for _, c := range clients {
 		if c.IsOnScreen(monitors) {
-			r := samure.Rect{
-				X: c.At[0],
-				Y: c.At[1],
-				W: c.Size[0],
-				H: c.Size[1],
+			r := Region{
+				Geo: samure.Rect{
+					X: c.At[0],
+					Y: c.At[1],
+					W: c.Size[0],
+					H: c.Size[1],
+				},
+				Name: c.Title,
 			}
 
 			if c.Floating {
 				floatingClients = append(floatingClients, r)
+			} else {
+				rs = append(rs, r)
 			}
-
-			rs = append(rs, r)
 		}
 	}
 
@@ -217,7 +226,7 @@ type SwayNode struct {
 	FloatingNodes []SwayNode `json:"floating_nodes"`
 }
 
-func (*SwayRegions) OutputRegions() (rs []samure.Rect) {
+func (*SwayRegions) OutputRegions() (rs []Region) {
 	swaymsgPath, err := exec.LookPath("swaymsg")
 	if err != nil {
 		return
@@ -267,13 +276,16 @@ func (*SwayRegions) CursorPos() (int, int, error) {
 	return 0, 0, errors.New("not implemented")
 }
 
-func swayTreeAddRegions(rs *[]samure.Rect, n SwayNode, currentWorkspaces []string) {
+func swayTreeAddRegions(rs *[]Region, n SwayNode, currentWorkspaces []string) {
 	if n.Type == "con" || n.Type == "floating_con" {
-		*rs = append(*rs, samure.Rect{
-			X: n.Rect.X,
-			Y: n.Rect.Y,
-			W: n.Rect.Width,
-			H: n.Rect.Height,
+		*rs = append(*rs, Region{
+			Geo: samure.Rect{
+				X: n.Rect.X,
+				Y: n.Rect.Y,
+				W: n.Rect.Width,
+				H: n.Rect.Height,
+			},
+			Name: n.Name,
 		})
 	} else {
 		if n.Type == "workspace" {
@@ -300,20 +312,29 @@ func swayTreeAddRegions(rs *[]samure.Rect, n SwayNode, currentWorkspaces []strin
 }
 
 type ArgumentRegions struct {
-	regions []samure.Rect
+	regions []Region
 }
 
-func (a *ArgumentRegions) OutputRegions() []samure.Rect {
+func (a *ArgumentRegions) OutputRegions() []Region {
 	if len(a.regions) != 0 {
 		return a.regions
 	}
 
-	var r samure.Rect
+	var r Region
+	r.Name = "nil"
 	var this string
 	other := flags.RegionsArgument
 
 	for len(other) != 0 {
-		words := strings.SplitN(other, ",", 2)
+		words := strings.SplitN(other, " ", 2)
+		if len(words) != 2 {
+			return a.regions
+		}
+		this, other = strings.TrimSpace(words[0]), strings.TrimSpace(words[1])
+
+		r.Name = this
+
+		words = strings.SplitN(other, ",", 2)
 		if len(words) != 2 {
 			return a.regions
 		}
@@ -323,7 +344,7 @@ func (a *ArgumentRegions) OutputRegions() []samure.Rect {
 		if err != nil {
 			return a.regions
 		}
-		r.X = int(x)
+		r.Geo.X = int(x)
 
 		words = strings.SplitN(other, " ", 2)
 		if len(words) != 2 {
@@ -335,7 +356,7 @@ func (a *ArgumentRegions) OutputRegions() []samure.Rect {
 		if err != nil {
 			return a.regions
 		}
-		r.Y = int(y)
+		r.Geo.Y = int(y)
 
 		words = strings.SplitN(other, "x", 2)
 		if len(words) != 2 {
@@ -347,7 +368,7 @@ func (a *ArgumentRegions) OutputRegions() []samure.Rect {
 		if err != nil {
 			return a.regions
 		}
-		r.W = int(w)
+		r.Geo.W = int(w)
 
 		words = strings.SplitN(other, " ", 2)
 		this = strings.TrimSpace(words[0])
@@ -356,7 +377,7 @@ func (a *ArgumentRegions) OutputRegions() []samure.Rect {
 		if err != nil {
 			return a.regions
 		}
-		r.H = int(h)
+		r.Geo.H = int(h)
 
 		a.regions = append(a.regions, r)
 
