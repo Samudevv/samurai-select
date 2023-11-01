@@ -28,7 +28,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"math"
+	"strconv"
+	"strings"
 
 	samure "github.com/PucklaJ/samurai-render-go"
 )
@@ -144,6 +147,88 @@ func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {
 	}
 }
 
+func (a App) createOutputString() (string, error) {
+	// Retrieve data that will be output using the format
+	sel, err := a.GetSelection()
+	if err != nil {
+		return "", err
+	}
+
+	outputName := "nil"
+	if a.selectedOutput.Handle != nil {
+		outputName = a.selectedOutput.Name()
+	}
+
+	regionName := "nil"
+	if isRegionSet(a.selectedRegion.Geo) {
+		regionName = a.selectedRegion.Name
+	}
+
+	var outputRelX, outputRelY, outputRelW, outputRelH int
+	if a.selectedOutput.Handle != nil {
+		// The corners of the selection relative to the selected output
+		relX := a.selectedOutput.Geo().RelX(float64(sel.X))
+		relY := a.selectedOutput.Geo().RelY(float64(sel.Y))
+		relEndX := a.selectedOutput.Geo().RelX(float64(sel.X + sel.W))
+		relEndY := a.selectedOutput.Geo().RelY(float64(sel.Y + sel.H))
+
+		// Clamp the values above to the geometry of the output
+		outputX := math.Min(math.Max(0.0, relX), float64(a.selectedOutput.Geo().W))
+		outputY := math.Min(math.Max(0.0, relY), float64(a.selectedOutput.Geo().H))
+		outputEndX := math.Min(math.Max(0.0, relEndX), float64(a.selectedOutput.Geo().W))
+		outputEndY := math.Min(math.Max(0.0, relEndY), float64(a.selectedOutput.Geo().H))
+
+		// Convert them to int and calculate width and height
+		outputRelX = int(outputX)
+		outputRelY = int(outputY)
+		outputRelW = int(outputEndX - outputX)
+		outputRelH = int(outputEndY - outputY)
+	}
+
+	var out strings.Builder
+	var parseSpecifier bool
+	for _, r := range flags.Format {
+		if parseSpecifier {
+			switch r {
+			case 'x':
+				out.WriteString(strconv.Itoa(sel.X))
+			case 'y':
+				out.WriteString(strconv.Itoa(sel.Y))
+			case 'w':
+				out.WriteString(strconv.Itoa(sel.W))
+			case 'h':
+				out.WriteString(strconv.Itoa(sel.H))
+			case 'X':
+				out.WriteString(strconv.Itoa(outputRelX))
+			case 'Y':
+				out.WriteString(strconv.Itoa(outputRelY))
+			case 'W':
+				out.WriteString(strconv.Itoa(outputRelW))
+			case 'H':
+				out.WriteString(strconv.Itoa(outputRelH))
+			case 'r':
+				out.WriteString(regionName)
+			case 'o':
+				out.WriteString(outputName)
+			case '%':
+				out.WriteRune(r)
+			default:
+				return "", fmt.Errorf("invalid format specifier: \"%s\"", string(r))
+			}
+			parseSpecifier = false
+		} else {
+			switch r {
+			case '%':
+				parseSpecifier = true
+			default:
+				out.WriteRune(r)
+			}
+		}
+	}
+
+	return out.String(), nil
+}
+
 func isRegionSet(r samure.Rect) bool {
 	return r.X != 0 || r.Y != 0 || r.W != 0 || r.H != 0
 }
@@ -157,11 +242,4 @@ func unsetRegion(r *samure.Rect) {
 	r.Y = 0
 	r.W = 0
 	r.H = 0
-}
-
-func differsRegion(r samure.Rect, t [4]float64) bool {
-	return float64(r.X) != t[0] ||
-		float64(r.Y) != t[1] ||
-		float64(r.W) != t[2] ||
-		float64(r.H) != t[3]
 }

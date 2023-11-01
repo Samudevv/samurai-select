@@ -28,7 +28,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"os/exec"
 	"strings"
@@ -113,45 +112,20 @@ func run() int {
 	ctx.SetRenderState(samure.RenderStateOnce)
 	ctx.Run()
 
-	// Retrieve data that will be output using the format
+	outStr, err := a.createOutputString()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+
+	fmt.Println(outStr)
+
 	sel, err := a.GetSelection()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
 
-	outputName := "nil"
-	if a.selectedOutput.Handle != nil {
-		outputName = a.selectedOutput.Name()
-	}
-
-	regionName := "nil"
-	if isRegionSet(a.selectedRegion.Geo) {
-		regionName = a.selectedRegion.Name
-	}
-
-	var outputRelX, outputRelY, outputRelW, outputRelH int
-	if a.selectedOutput.Handle != nil {
-		// The corners of the selection relative to the selected output
-		relX := a.selectedOutput.Geo().RelX(float64(sel.X))
-		relY := a.selectedOutput.Geo().RelY(float64(sel.Y))
-		relEndX := a.selectedOutput.Geo().RelX(float64(sel.X + sel.W))
-		relEndY := a.selectedOutput.Geo().RelY(float64(sel.Y + sel.H))
-
-		// Clamp the values above to the geometry of the output
-		outputX := math.Min(math.Max(0.0, relX), float64(a.selectedOutput.Geo().W))
-		outputY := math.Min(math.Max(0.0, relY), float64(a.selectedOutput.Geo().H))
-		outputEndX := math.Min(math.Max(0.0, relEndX), float64(a.selectedOutput.Geo().W))
-		outputEndY := math.Min(math.Max(0.0, relEndY), float64(a.selectedOutput.Geo().H))
-
-		// Convert them to int and calculate width and height
-		outputRelX = int(outputX)
-		outputRelY = int(outputY)
-		outputRelW = int(outputEndX - outputX)
-		outputRelH = int(outputEndY - outputY)
-	}
-
-	fmt.Printf(flags.Format+"\n", sel.X, sel.Y, sel.W, sel.H, outputName, regionName, outputRelX, outputRelY, outputRelW, outputRelH)
 	geometry := fmt.Sprintf("%d,%d %dx%d", sel.X, sel.Y, sel.W, sel.H)
 
 	if flags.Screenshot || flags.Command != "" {
