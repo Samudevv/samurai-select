@@ -335,10 +335,7 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 		}
 	case samure.EventKeyboardKey:
 		if e.Key == samure.KeyEsc && e.State == samure.StateReleased {
-			a.start = [2]float64{0.0, 0.0}
-			a.end = a.start
-			unsetRegion(&a.chosenRegion)
-			a.chosenOutput.Handle = nil
+			a.cancelled = true
 			ctx.SetRunning(false)
 			break
 		}

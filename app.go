@@ -64,6 +64,7 @@ type App struct {
 	clearScreen bool
 	touchID     *int
 	touchFocus  samure.Output
+	cancelled   bool
 
 	grabberAnim        float64
 	grabberRadius      float64
@@ -90,31 +91,23 @@ type App struct {
 }
 
 func (a App) GetSelection() (samure.Rect, error) {
-	if a.state == StateChooseRegion {
-		if isRegionSet(a.chosenRegion) {
-			return a.chosenRegion, nil
-		} else {
-			return samure.Rect{}, errors.New("selection cancelled")
-		}
-	}
-
-	if a.state == StateChooseOutput {
-		if a.chosenOutput.Handle == nil {
-			return samure.Rect{}, errors.New("selection cancelled")
-		}
-		return a.chosenOutput.Geo(), nil
-	}
-
-	if a.start[0] == 0.0 && a.start[1] == 0.0 && a.end[0] == 0.0 && a.end[1] == 0.0 {
+	if a.cancelled {
 		return samure.Rect{}, errors.New("selection cancelled")
 	}
 
-	return samure.Rect{
-		X: int(a.start[0]),
-		Y: int(a.start[1]),
-		W: int(a.end[0] - a.start[0]),
-		H: int(a.end[1] - a.start[1]),
-	}, nil
+	switch a.state {
+	case StateChooseRegion:
+		return a.chosenRegion, nil
+	case StateChooseOutput:
+		return a.chosenOutput.Geo(), nil
+	default:
+		return samure.Rect{
+			X: int(a.start[0]),
+			Y: int(a.start[1]),
+			W: int(a.end[0] - a.start[0]),
+			H: int(a.end[1] - a.start[1]),
+		}, nil
+	}
 }
 
 func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {
