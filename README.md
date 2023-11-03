@@ -47,3 +47,15 @@ Or this to install it:
 ```bash
 go install -v && ln -s $GOPATH/bin/samurai-select $GOPATH/bin/smel
 ```
+
+To build the man page:
+
+1. Install `scdoc` and `gzip`
+2. Execute:
+```bash
+scdoc < manpage.scd | gzip -c > samurai-select.1.gz
+```
+3. View it:
+```bash
+man -l samurai-select.1.gz
+```
