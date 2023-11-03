@@ -126,8 +126,6 @@ func run() int {
 		return 1
 	}
 
-	geometry := fmt.Sprintf("%d,%d %dx%d", sel.X, sel.Y, sel.W, sel.H)
-
 	if flags.Screenshot || flags.Command != "" {
 		a.clearScreen = true
 		for i := 0; i < ctx.LenOutputs(); i++ {
@@ -142,6 +140,8 @@ func run() int {
 			fmt.Fprintln(os.Stderr, "Screenshot format:", err)
 			return 1
 		}
+
+		geometry := fmt.Sprintf("%d,%d %dx%d", sel.X, sel.Y, sel.W, sel.H)
 
 		var screenshotFlags []string
 		if flags.ScreenshotFlags != "" {
@@ -175,7 +175,7 @@ func run() int {
 			return c == ' '
 		})
 		for i := range commandArgs {
-			commandArgs[i] = strings.ReplaceAll(commandArgs[i], "%geometry%", geometry)
+			commandArgs[i] = strings.ReplaceAll(commandArgs[i], "%geometry%", outStr)
 		}
 		cmd := exec.Command(commandArgs[0], commandArgs[1:]...)
 		fmt.Println(cmd.Args)
