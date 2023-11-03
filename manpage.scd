@@ -109,6 +109,9 @@ All color options support *CSS Colors* e.g. #FF67ABFF, rgb(100%, 25%, 45%), lime
 *-h*|*--help*
 	Display a more concise help message
 
+*-v*|*--version*
+	Display version information and exit
+
 # FORMAT
 
 When using the *-f* or *--format* flag the following specifiers can be utilized:
