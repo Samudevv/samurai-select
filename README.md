@@ -20,10 +20,26 @@ A screen selection tool for wayland compositors using the layer shell. I thank [
 
 ## Install
 
+### Arch Linux (AUR)
+
+This program is available through the AUR, you can install it using an AUR helper like **yay**:
+```bash
+yay -S samurai-select
+```
+or manually:
+```bash
+git clone https://aur.archlinux.org/samurai-select-git
+cd samurai-select
+makepkg -si
+```
+
+### Everything Else
+
 If you have the dependencies listed under [Build](#Build) installed you can just install this program without having the source code by calling
 
 ```bash
-go install github.com/PucklaJ/samurai-select@latest && ln -s $GOPATH/bin/samurai-select $GOPATH/bin/smel
+go install github.com/PucklaJ/samurai-select@latest
+ln -s $GOPATH/bin/samurai-select $GOPATH/bin/smel
 ```
 
 ## Build
@@ -40,12 +56,12 @@ sudo pacman -S --needed go gcc wayland cairo
 
 Then call this to build it:
 ```
-go build -v -o smel
+go build -v
 ```
 
 Or this to install it:
 ```bash
-go install -v && ln -s $GOPATH/bin/samurai-select $GOPATH/bin/smel
+go install -v
 ```
 
 To build the man page:
