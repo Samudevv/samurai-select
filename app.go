@@ -1,6 +1,6 @@
 /***********************************************************************************
  *                         This file is part of samurai-select
- *                    https://github.com/PucklaJ/samurai-select
+ *                    https://github.com/Samudevv/samurai-select
  ***********************************************************************************
  * Copyright (c) 2023 Jonas Pucher
  *
@@ -34,7 +34,7 @@ import (
 	"strings"
 	"time"
 
-	samure "github.com/PucklaJ/samurai-render-go"
+	samure "github.com/Samudevv/samurai-render-go"
 )
 
 const (

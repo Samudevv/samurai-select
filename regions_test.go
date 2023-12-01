@@ -1,6 +1,6 @@
 /***********************************************************************************
  *                         This file is part of samurai-select
- *                    https://github.com/PucklaJ/samurai-select
+ *                    https://github.com/Samudevv/samurai-select
  ***********************************************************************************
  * Copyright (c) 2023 Jonas Pucher
  *

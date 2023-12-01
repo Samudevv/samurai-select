@@ -1,6 +1,6 @@
 /***********************************************************************************
  *                         This file is part of samurai-select
- *                    https://github.com/PucklaJ/samurai-select
+ *                    https://github.com/Samudevv/samurai-select
  ***********************************************************************************
  * Copyright (c) 2023 Jonas Pucher
  *
@@ -30,8 +30,8 @@ import (
 	"fmt"
 	"math"
 
-	samure "github.com/PucklaJ/samurai-render-go"
-	samure_cairo "github.com/PucklaJ/samurai-render-go/backends/cairo"
+	samure "github.com/Samudevv/samurai-render-go"
+	samure_cairo "github.com/Samudevv/samurai-render-go/backends/cairo"
 	"github.com/gotk3/gotk3/cairo"
 )
 
