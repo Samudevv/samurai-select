@@ -38,7 +38,7 @@ makepkg -si
 If you have the dependencies listed under [Build](#Build) installed you can just install this program without having the source code by calling
 
 ```bash
-go install github.com/PucklaJ/samurai-select@latest
+go install github.com/Samudevv/samurai-select@latest
 ln -s $GOPATH/bin/samurai-select $GOPATH/bin/smel
 ```
 

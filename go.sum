@@ -1,9 +1,5 @@
-github.com/PucklaJ/samurai-render-go v0.1.4 h1:Q9xhk0cmTddYGNhbwRZ+B8U0ekQPz0/HkgHmucSEYqM=
-github.com/PucklaJ/samurai-render-go v0.1.4/go.mod h1:XlttjBEamOvRxTHU3RryhkmaZV+aUpTp5nBuveKlNo0=
-github.com/PucklaJ/samurai-render-go v0.1.5 h1:ZhmLAC9tgzPGs+Jjyze4svVesgCWx6A3J+KXpxPVFRw=
-github.com/PucklaJ/samurai-render-go v0.1.5/go.mod h1:XlttjBEamOvRxTHU3RryhkmaZV+aUpTp5nBuveKlNo0=
-github.com/PucklaJ/samurai-render-go v1.23.11 h1:CMYoHeIMWnJN++J1hBMGPIR06gQdQfewQoMj49cjdgQ=
-github.com/PucklaJ/samurai-render-go v1.23.11/go.mod h1:XlttjBEamOvRxTHU3RryhkmaZV+aUpTp5nBuveKlNo0=
+github.com/Samudevv/samurai-render-go v1.23.12 h1:qy8ola1W0N6HLZVATTISSxa+Pn3g5ii8HKKrV6SxLgE=
+github.com/Samudevv/samurai-render-go v1.23.12/go.mod h1:YegkauO8DNCh2D9GPhGLISzE8P1G8gXyAHS9hd68oIU=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gotk3/gotk3 v0.6.2 h1:sx/PjaKfKULJPTPq8p2kn2ZbcNFxpOJqi4VLzMbEOO8=
@@ -16,10 +12,7 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
+golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4 h1:EZ2mChiOa8udjfp6rRmswTbtZN/QzUQp4ptM4rnjHvc=
 golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.13.0 h1:Af8nKPmuFypiUBjVoU9V20FiaFXOcuZI21p0ycVYYGE=
-golang.org/x/sys v0.13.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.14.0 h1:Vz7Qs629MkJkGyHxUlRHizWJRG2j8fbQKjELVSNhy7Q=
-golang.org/x/sys v0.14.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
