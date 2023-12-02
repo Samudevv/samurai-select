@@ -4,7 +4,7 @@ import "fmt"
 
 const (
 	MajorVersion = 23
-	MinorVersion = 11
+	MinorVersion = 12
 	PatchVersion = 0
 )
 
