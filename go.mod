@@ -3,7 +3,7 @@ module github.com/Samudevv/samurai-select
 go 1.21.4
 
 require (
-	github.com/Samudevv/samurai-render-go v1.23.12
+	github.com/Samudevv/samurai-render-go v1.24.0
 	github.com/gotk3/gotk3 v0.6.2
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/mazznoer/csscolorparser v0.1.3

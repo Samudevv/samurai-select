@@ -1,5 +1,7 @@
 github.com/Samudevv/samurai-render-go v1.23.12 h1:qy8ola1W0N6HLZVATTISSxa+Pn3g5ii8HKKrV6SxLgE=
 github.com/Samudevv/samurai-render-go v1.23.12/go.mod h1:YegkauO8DNCh2D9GPhGLISzE8P1G8gXyAHS9hd68oIU=
+github.com/Samudevv/samurai-render-go v1.24.0 h1:RCrLfXydzpKBDGScmTr2cSizz9wkNqe0D24WEgg0TLM=
+github.com/Samudevv/samurai-render-go v1.24.0/go.mod h1:YegkauO8DNCh2D9GPhGLISzE8P1G8gXyAHS9hd68oIU=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gotk3/gotk3 v0.6.2 h1:sx/PjaKfKULJPTPq8p2kn2ZbcNFxpOJqi4VLzMbEOO8=

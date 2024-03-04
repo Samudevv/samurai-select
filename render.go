@@ -78,31 +78,36 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 		return
 	}
 
-	var xGlobal, yGlobal, w, h float64
+	var xGlobal, yGlobal, wGlobal, hGlobal float64
+	var xLocal, yLocal, wLocal, hLocal float64
 
 	if a.state == StateChooseRegion {
 		xGlobal = a.currentRegionAnim[0]
 		yGlobal = a.currentRegionAnim[1]
-		w = a.currentRegionAnim[2] - a.currentRegionAnim[0]
-		h = a.currentRegionAnim[3] - a.currentRegionAnim[1]
+		wGlobal = a.currentRegionAnim[2] - a.currentRegionAnim[0]
+		hGlobal = a.currentRegionAnim[3] - a.currentRegionAnim[1]
 	} else {
 		xGlobal = a.start[0]
 		yGlobal = a.start[1]
-		w = a.end[0] - a.start[0]
-		h = a.end[1] - a.start[1]
+		wGlobal = a.end[0] - a.start[0]
+		hGlobal = a.end[1] - a.start[1]
 	}
 
-	if o.RectInOutput(int(xGlobal), int(yGlobal), int(w), int(h)) {
-		x := o.RelX(xGlobal)
-		y := o.RelY(yGlobal)
+	xLocal = o.RelX(xGlobal) * layerSurface.Scale()
+	yLocal = o.RelY(yGlobal) * layerSurface.Scale()
+	wLocal = wGlobal * layerSurface.Scale()
+	hLocal = hGlobal * layerSurface.Scale()
+
+	if o.RectInOutput(int(xGlobal), int(yGlobal), int(wGlobal), int(hGlobal)) {
+		borderWidthLocal := flags.BorderWidth * layerSurface.Scale()
 
 		if a.clearScreen {
 			c.SetSourceRGBA(0.0, 0.0, 0.0, 0.0)
 			c.Rectangle(
-				x-flags.BorderWidth/2.0,
-				y-flags.BorderWidth/2.0,
-				w+flags.BorderWidth,
-				h+flags.BorderWidth,
+				xLocal-borderWidthLocal/2.0,
+				yLocal-borderWidthLocal/2.0,
+				wLocal+borderWidthLocal,
+				hLocal+borderWidthLocal,
 			)
 			c.Fill()
 			return
@@ -115,7 +120,7 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 			a.selectionColor[2],
 			a.selectionColor[3],
 		)
-		c.Rectangle(x, y, w, h)
+		c.Rectangle(xLocal, yLocal, wLocal, hLocal)
 		c.Fill()
 		// Render the border of the selection
 		c.SetSourceRGBA(
@@ -124,24 +129,21 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 			a.borderColor[2],
 			a.borderColor[3],
 		)
-		c.Rectangle(x, y, w, h)
-		c.SetLineWidth(flags.BorderWidth)
+		c.Rectangle(xLocal, yLocal, wLocal, hLocal)
+		c.SetLineWidth(borderWidthLocal)
 		c.Stroke()
 	}
 
-	a.renderGrabbers(c, o)
+	a.renderGrabbers(c, o, xLocal, yLocal, wLocal, hLocal, layerSurface.Scale())
 
-	if flags.Text && w >= 1.0 && h >= 1.0 {
-		x := o.RelX(xGlobal)
-		y := o.RelY(yGlobal)
-
-		widthStr := fmt.Sprintf("%d", int(w))
-		heightStr := fmt.Sprintf("%d", int(h))
+	if flags.Text && wLocal >= 1.0 && hLocal >= 1.0 {
+		widthStr := fmt.Sprintf("%d", int(wGlobal))
+		heightStr := fmt.Sprintf("%d", int(hGlobal))
 		xStr := fmt.Sprintf("X: %d", int(xGlobal))
 		yStr := fmt.Sprintf("Y: %d", int(yGlobal))
 
 		c.SelectFontFace(flags.Font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-		c.SetFontSize(flags.FontSize)
+		c.SetFontSize(flags.FontSize * layerSurface.Scale())
 		c.SetSourceRGBA(
 			a.textColor[0],
 			a.textColor[1],
@@ -154,43 +156,77 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 		yExt := c.TextExtents(yStr)
 
 		widthTextPos := [2]float64{
-			x + w/2.0 - widthExt.Width/2.0,
-			y + h + widthExt.Height + a.padding,
+			xLocal + wLocal/2.0 - widthExt.Width/2.0,
+			yLocal + hLocal + widthExt.Height + a.padding,
 		}
 		heightTextPos := [2]float64{
-			x + w + a.padding,
-			y + h/2.0 + heightExt.Height/2.0,
+			xLocal + wLocal + a.padding,
+			yLocal + hLocal/2.0 + heightExt.Height/2.0,
 		}
 		xTextPos := [2]float64{
-			x,
-			y - a.padding,
+			xLocal,
+			yLocal - a.padding,
 		}
 		yTextPos := [2]float64{
-			x - yExt.Width - a.padding,
-			y + yExt.Height,
+			xLocal - yExt.Width - a.padding,
+			yLocal + yExt.Height,
 		}
 
 		if a.state >= StateAlter && a.state <= StateDragLeft {
+			// TODO: Apply scaling here
 			widthTextPos[1] += a.grabberRadius + a.grabberBorderWidth/2.0
 			heightTextPos[0] += a.grabberRadius + a.grabberBorderWidth/2.0
 			xTextPos[1] -= a.grabberRadius + a.grabberBorderWidth/2.0
 			yTextPos[0] -= a.grabberRadius + a.grabberBorderWidth/2.0
 		}
 
+		widthTextPosGlobal := [2]float64{
+			widthTextPos[0] / layerSurface.Scale(),
+			widthTextPos[1] / layerSurface.Scale(),
+		}
+		heightTextPosGlobal := [2]float64{
+			heightTextPos[0] / layerSurface.Scale(),
+			heightTextPos[1] / layerSurface.Scale(),
+		}
+		widthExtGlobal := [2]float64{
+			widthExt.Width / layerSurface.Scale(),
+			widthExt.Height / layerSurface.Scale(),
+		}
+		heightExtGlobal := [2]float64{
+			heightExt.Width / layerSurface.Scale(),
+			heightExt.Height / layerSurface.Scale(),
+		}
+		xTextPosGlobal := [2]float64{
+			xTextPos[0] / layerSurface.Scale(),
+			xTextPos[1] / layerSurface.Scale(),
+		}
+		yTextPosGlobal := [2]float64{
+			yTextPos[0] / layerSurface.Scale(),
+			yTextPos[1] / layerSurface.Scale(),
+		}
+		xExtGlobal := [2]float64{
+			xExt.Width / layerSurface.Scale(),
+			xExt.Height / layerSurface.Scale(),
+		}
+		yExtGlobal := [2]float64{
+			yExt.Width / layerSurface.Scale(),
+			yExt.Height / layerSurface.Scale(),
+		}
+
 		// Only render text if it's inside the output
-		if o.RectInOutput(int(widthTextPos[0])+o.X, int(widthTextPos[1])+o.Y-int(widthExt.Height), int(widthExt.Width), int(widthExt.Height)) {
+		if o.RectInOutput(int(widthTextPosGlobal[0])+o.X, int(widthTextPosGlobal[1])+o.Y-int(widthExtGlobal[1]), int(widthExtGlobal[0]), int(widthExtGlobal[1])) {
 			c.MoveTo(widthTextPos[0], widthTextPos[1])
 			c.ShowText(widthStr)
 		}
-		if o.RectInOutput(int(heightTextPos[0])+o.X, int(heightTextPos[1])+o.Y-int(heightExt.Height), int(heightExt.Width), int(heightExt.Height)) {
+		if o.RectInOutput(int(heightTextPosGlobal[0])+o.X, int(heightTextPosGlobal[1])+o.Y-int(heightExtGlobal[1]), int(heightExtGlobal[0]), int(heightExtGlobal[1])) {
 			c.MoveTo(heightTextPos[0], heightTextPos[1])
 			c.ShowText(heightStr)
 		}
-		if o.RectInOutput(int(xTextPos[0])+o.X, int(xTextPos[1])+o.Y, int(xExt.Width), int(xExt.Height)) {
+		if o.RectInOutput(int(xTextPosGlobal[0])+o.X, int(xTextPosGlobal[1])+o.Y, int(xExtGlobal[0]), int(xExtGlobal[1])) {
 			c.MoveTo(xTextPos[0], xTextPos[1])
 			c.ShowText(xStr)
 		}
-		if o.RectInOutput(int(yTextPos[0])+o.X, int(yTextPos[1])+o.Y, int(yExt.Width), int(yExt.Height)) {
+		if o.RectInOutput(int(yTextPosGlobal[0])+o.X, int(yTextPosGlobal[1])+o.Y, int(yExtGlobal[0]), int(yExtGlobal[1])) {
 			c.MoveTo(yTextPos[0], yTextPos[1])
 			c.ShowText(yStr)
 		}
@@ -230,7 +266,7 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 		}
 
 		c.SelectFontFace("sans-serif", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-		c.SetFontSize(30)
+		c.SetFontSize(30.0 * layerSurface.Scale())
 		c.SetSourceRGBA(
 			1.0,
 			1.0,
@@ -242,8 +278,12 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 			stateStr,
 			fmt.Sprintf("xGlobal=%.1f", xGlobal),
 			fmt.Sprintf("yGlobal=%.1f", yGlobal),
-			fmt.Sprintf("w=%.1f", w),
-			fmt.Sprintf("h=%.1f", h),
+			fmt.Sprintf("wGlobal=%.1f", wGlobal),
+			fmt.Sprintf("hGlobal=%.1f", hGlobal),
+			fmt.Sprintf("xLocal=%.1f", xLocal),
+			fmt.Sprintf("yLocal=%.1f", yLocal),
+			fmt.Sprintf("wLocal=%.1f", wLocal),
+			fmt.Sprintf("hLocal=%.1f", hLocal),
 			fmt.Sprintf("App.regionAnim=%.1f", a.regionAnim),
 		}
 
@@ -258,28 +298,26 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 	}
 }
 
-func (a App) renderGrabbers(c *cairo.Context, o samure.Rect) {
+func (a App) renderGrabbers(c *cairo.Context, o samure.Rect, x, y, w, h, scale float64) {
 	if a.state < StateAlter || a.state > StateDragLeft {
 		return
 	}
 
-	x := o.RelX(a.start[0])
-	y := o.RelY(a.start[1])
-	w := a.end[0] - a.start[0]
-	h := a.end[1] - a.start[1]
-
-	a.renderGrabber(c, x, y, o)         // Top Left
-	a.renderGrabber(c, x+w/2.0, y, o)   // Top
-	a.renderGrabber(c, x+w, y, o)       // Top Right
-	a.renderGrabber(c, x+w, y+h/2.0, o) // Right
-	a.renderGrabber(c, x+w, y+h, o)     // Bottom Right
-	a.renderGrabber(c, x+w/2.0, y+h, o) // Bottom
-	a.renderGrabber(c, x, y+h, o)       // Bottom Left
-	a.renderGrabber(c, x, y+h/2.0, o)   // Left
+	a.renderGrabber(c, x, y, o, scale)         // Top Left
+	a.renderGrabber(c, x+w/2.0, y, o, scale)   // Top
+	a.renderGrabber(c, x+w, y, o, scale)       // Top Right
+	a.renderGrabber(c, x+w, y+h/2.0, o, scale) // Right
+	a.renderGrabber(c, x+w, y+h, o, scale)     // Bottom Right
+	a.renderGrabber(c, x+w/2.0, y+h, o, scale) // Bottom
+	a.renderGrabber(c, x, y+h, o, scale)       // Bottom Left
+	a.renderGrabber(c, x, y+h/2.0, o, scale)   // Left
 }
 
-func (a App) renderGrabber(c *cairo.Context, x, y float64, o samure.Rect) {
-	if !o.CircleInOutput(int(x)+o.X, int(y)+o.Y, int(flags.GrabberRadius+flags.BorderWidth/2.0)) {
+func (a App) renderGrabber(c *cairo.Context, x, y float64, o samure.Rect, scale float64) {
+	grabberRadiusLocal := a.grabberRadius * scale
+	grabberBorderWidthLocal := a.grabberBorderWidth * scale
+
+	if !o.CircleInOutput(int(x/scale)+o.X, int(y/scale)+o.Y, int(flags.GrabberRadius+flags.BorderWidth/2.0)) {
 		return
 	}
 
@@ -289,7 +327,7 @@ func (a App) renderGrabber(c *cairo.Context, x, y float64, o samure.Rect) {
 		a.grabberColor[2],
 		a.grabberColor[3],
 	)
-	c.Arc(x, y, a.grabberRadius, 0.0, math.Pi*2)
+	c.Arc(x, y, grabberRadiusLocal, 0.0, math.Pi*2)
 	c.Fill()
 	c.SetSourceRGBA(
 		a.grabberBorderColor[0],
@@ -297,8 +335,8 @@ func (a App) renderGrabber(c *cairo.Context, x, y float64, o samure.Rect) {
 		a.grabberBorderColor[2],
 		a.grabberBorderColor[3],
 	)
-	c.Arc(x, y, a.grabberRadius, 0.0, math.Pi*2)
-	c.SetLineWidth(a.grabberBorderWidth)
+	c.Arc(x, y, grabberRadiusLocal, 0.0, math.Pi*2)
+	c.SetLineWidth(grabberBorderWidthLocal)
 	c.Stroke()
 }
 
