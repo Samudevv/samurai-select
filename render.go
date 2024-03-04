@@ -137,6 +137,10 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 	a.renderGrabbers(c, o, xLocal, yLocal, wLocal, hLocal, layerSurface.Scale())
 
 	if flags.Text && wLocal >= 1.0 && hLocal >= 1.0 {
+		paddingLocal := a.padding * layerSurface.Scale()
+		grabberRadiusLocal := a.grabberRadius * layerSurface.Scale()
+		grabberBorderWidthLocal := a.grabberBorderWidth * layerSurface.Scale()
+
 		widthStr := fmt.Sprintf("%d", int(wGlobal))
 		heightStr := fmt.Sprintf("%d", int(hGlobal))
 		xStr := fmt.Sprintf("X: %d", int(xGlobal))
@@ -157,27 +161,26 @@ func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o s
 
 		widthTextPos := [2]float64{
 			xLocal + wLocal/2.0 - widthExt.Width/2.0,
-			yLocal + hLocal + widthExt.Height + a.padding,
+			yLocal + hLocal + widthExt.Height + paddingLocal,
 		}
 		heightTextPos := [2]float64{
-			xLocal + wLocal + a.padding,
+			xLocal + wLocal + paddingLocal,
 			yLocal + hLocal/2.0 + heightExt.Height/2.0,
 		}
 		xTextPos := [2]float64{
 			xLocal,
-			yLocal - a.padding,
+			yLocal - paddingLocal,
 		}
 		yTextPos := [2]float64{
-			xLocal - yExt.Width - a.padding,
+			xLocal - yExt.Width - paddingLocal,
 			yLocal + yExt.Height,
 		}
 
 		if a.state >= StateAlter && a.state <= StateDragLeft {
-			// TODO: Apply scaling here
-			widthTextPos[1] += a.grabberRadius + a.grabberBorderWidth/2.0
-			heightTextPos[0] += a.grabberRadius + a.grabberBorderWidth/2.0
-			xTextPos[1] -= a.grabberRadius + a.grabberBorderWidth/2.0
-			yTextPos[0] -= a.grabberRadius + a.grabberBorderWidth/2.0
+			widthTextPos[1] += grabberRadiusLocal + grabberBorderWidthLocal/2.0
+			heightTextPos[0] += grabberRadiusLocal + grabberBorderWidthLocal/2.0
+			xTextPos[1] -= grabberRadiusLocal + grabberBorderWidthLocal/2.0
+			yTextPos[0] -= grabberRadiusLocal + grabberBorderWidthLocal/2.0
 		}
 
 		widthTextPosGlobal := [2]float64{
