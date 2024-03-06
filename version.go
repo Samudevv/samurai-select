@@ -3,9 +3,9 @@ package main
 import "fmt"
 
 const (
-	MajorVersion = 23
-	MinorVersion = 12
-	PatchVersion = 0
+	MajorVersion = 1
+	MinorVersion = 24
+	PatchVersion = 1
 )
 
 func VersionString() string {
