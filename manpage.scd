@@ -156,5 +156,5 @@ The following specifiers can be used for the *-o* or *--output* flag when taking
 
 # AUTHORS
 
-This project is maintained by Jonas Pucher <jonaas.pucher000000@gmail.com> aka
+This project is maintained by Kassandra Pucher <kassandra@pucher.space> aka
 PucklaJ on GitHub. See https://github.com/Samudevv/samurai-select on GitHub for the source code and ways to contribute.
